@@ -1,12 +1,34 @@
 import { NextResponse } from "next/server";
+import { getCachedData, setCachedData } from "./cache";
 
 export async function GET() {
   try {
+    // STEP 1: Check cache first
+    const cachedData = getCachedData();
+    if (cachedData) {
+      console.log("CACHE HIT");
+      return NextResponse.json({
+        ...cachedData,
+        cached: true,
+      });
+    }
+
+    // STEP 2: Cache miss → fetch all contests
+    console.log("CACHE MISS → fetching fresh data");
     const contests = await fetchAllContests();
-    return NextResponse.json({
+
+    const response = {
       success: true,
       contests,
       lastUpdated: new Date().toISOString(),
+    };
+
+    // STEP 3: Store result in cache
+    setCachedData(response);
+
+    return NextResponse.json({
+      ...response,
+      cached: false,
     });
   } catch (error) {
     console.error("Error fetching contests:", error);
@@ -15,10 +37,11 @@ export async function GET() {
         success: false,
         error: "Failed to fetch contests",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
+
 
 async function fetchAllContests() {
   const results = await Promise.allSettled([
