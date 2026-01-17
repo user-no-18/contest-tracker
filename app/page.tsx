@@ -1,65 +1,600 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import {
+  Calendar,
+  Clock,
+  ExternalLink,
+  RefreshCw,
+  Trophy,
+  DollarSign,
+  Briefcase,
+  AlertCircle,
+  Moon,
+  Sun,
+  FileText,
+  BookOpen,
+  LogIn,
+  Code2,
+  Lightbulb,
+  LightbulbOff,
+  Flame,
+} from "lucide-react";
+
+interface Contest {
+  id: string;
+  platform: string;
+  title: string;
+  url: string;
+  start_time: string;
+  duration: number;
+}
+
+export default function ContestTracker() {
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [darkMode, setDarkMode] = useState(false);
+  
+  const [showSpotlight, setShowSpotlight] = useState(true);
+
+  const platforms = [
+    "all",
+    "LeetCode",
+    "Codeforces",
+    "CodeChef",
+    "AtCoder",
+    "HackerRank",
+   /*  "TopCoder", */
+    "GeeksforGeeks",
+    "HackerEarth",
+    "SPOJ",
+  ];
+
+  const fetchContests = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/contests");
+      const data = await res.json();
+      if (data.success) {
+       
+        const sortedContests = data.contests.sort((a: Contest, b: Contest) => {
+          const now = new Date();
+          const startA = new Date(a.start_time);
+          const startB = new Date(b.start_time);
+          const endA = new Date(startA.getTime() + a.duration * 1000);
+          const endB = new Date(startB.getTime() + b.duration * 1000);
+          
+          // Calculate time differences in hours
+          const hoursUntilA = (startA.getTime() - now.getTime()) / (1000 * 60 * 60);
+          const hoursUntilB = (startB.getTime() - now.getTime()) / (1000 * 60 * 60);
+          
+          // Check if contest is live or hot (within 24 hours)
+          const isLiveA = now >= startA && now <= endA;
+          const isLiveB = now >= startB && now <= endB;
+          const isHotA = (isLiveA || (hoursUntilA >= 0 && hoursUntilA <= 24));
+          const isHotB = (isLiveB || (hoursUntilB >= 0 && hoursUntilB <= 24));
+          
+          // Define platform categories
+          const isPriorityPlatformA = a.platform === 'LeetCode' || a.platform === 'Codeforces';
+          const isPriorityPlatformB = b.platform === 'LeetCode' || b.platform === 'Codeforces';
+          
+          const majorPlatforms = ['CodeChef', 'AtCoder', 'TopCoder', 'GeeksforGeeks', 'HackerEarth', 'SPOJ'];
+          const isMajorA = majorPlatforms.includes(a.platform);
+          const isMajorB = majorPlatforms.includes(b.platform);
+          
+          const isHackerRankA = a.platform === 'HackerRank';
+          const isHackerRankB = b.platform === 'HackerRank';
+          
+          // Time windows
+          const isWithin48hA = hoursUntilA >= 0 && hoursUntilA <= 48;
+          const isWithin48hB = hoursUntilB >= 0 && hoursUntilB <= 48;
+          const isWithin72hA = hoursUntilA >= 0 && hoursUntilA <= 72;
+          const isWithin72hB = hoursUntilB >= 0 && hoursUntilB <= 72;
+          
+          // Assign priority levels
+          const getPriority = (contest: Contest, isHot: boolean, isPriority: boolean, isMajor: boolean, isHR: boolean, within48h: boolean, within72h: boolean) => {
+            if (isHot) return 1; // HOT (live or within 24h) - HIGHEST PRIORITY
+            if (isPriority && within48h) return 2; // LC/CF within 48h
+            if (isMajor && within72h) return 3; // Major platforms within 72h
+            if (isHR) return 4; // HackerRank
+            return 5; // Rest
+          };
+          
+          const priorityA = getPriority(a, isHotA, isPriorityPlatformA, isMajorA, isHackerRankA, isWithin48hA, isWithin72hA);
+          const priorityB = getPriority(b, isHotB, isPriorityPlatformB, isMajorB, isHackerRankB, isWithin48hB, isWithin72hB);
+          
+          // Sort by priority level first
+          if (priorityA !== priorityB) {
+            return priorityA - priorityB;
+          }
+          
+          // Within same priority, sort by start time
+          return startA.getTime() - startB.getTime();
+        });
+        
+        setContests(sortedContests);
+        setLastUpdated(new Date(data.lastUpdated));
+      } else {
+        setError(data.error || "Failed to fetch contests");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Network error. Please check your connection.");
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchContests();
+    const interval = setInterval(fetchContests, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatDuration = (seconds: number) => {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${mins}m`;
+    return `${mins}m`;
+  };
+
+  // Check if contest is within 24 hours (HOT)
+  const isHotContest = (startTime: string) => {
+    const now = new Date();
+    const start = new Date(startTime);
+    const diff = start.getTime() - now.getTime();
+    const hoursUntilStart = diff / (1000 * 60 * 60);
+    // Only mark as hot if it's today or within next 24 hours
+    return hoursUntilStart >= 0 && hoursUntilStart <= 24;
+  };
+
+  const getStatus = (startTime: string, duration: number) => {
+    const now = new Date();
+    const start = new Date(startTime);
+    const end = new Date(start.getTime() + duration * 1000);
+
+    if (now >= start && now <= end)
+      return { text: "LIVE NOW!", color: darkMode ? "bg-green-500" : "bg-green-400" };
+    const diff = start.getTime() - now.getTime();
+    if (diff < 86400000) return { text: "Today!", color: darkMode ? "bg-yellow-500" : "bg-yellow-400" };
+    if (diff < 604800000) return { text: "This Week", color: darkMode ? "bg-blue-400" : "bg-blue-300" };
+    return { text: "Upcoming", color: darkMode ? "bg-gray-600" : "bg-gray-200" };
+  };
+
+  const getPlatformStyle = (platform: string) => {
+    if (darkMode) {
+      const darkStyles: Record<string, string> = {
+        LeetCode: "bg-yellow-900/50 text-yellow-300 border-yellow-500",
+        Codeforces: "bg-blue-900/50 text-blue-300 border-blue-500",
+        CodeChef: "bg-orange-900/50 text-orange-300 border-orange-500",
+        AtCoder: "bg-red-900/50 text-red-300 border-red-500",
+        HackerRank: "bg-green-900/50 text-green-300 border-green-500",
+        TopCoder: "bg-indigo-900/50 text-indigo-300 border-indigo-500",
+        GeeksforGeeks: "bg-emerald-900/50 text-emerald-300 border-emerald-500",
+        HackerEarth: "bg-purple-900/50 text-purple-300 border-purple-500",
+        SPOJ: "bg-teal-900/50 text-teal-300 border-teal-500",
+        CodeSignal: "bg-pink-900/50 text-pink-300 border-pink-500",
+        TechGig: "bg-cyan-900/50 text-cyan-300 border-cyan-500",
+      };
+      return darkStyles[platform] || "bg-gray-700/50 text-gray-300 border-gray-500";
+    }
+
+    const lightStyles: Record<string, string> = {
+      LeetCode: "bg-yellow-200 text-yellow-900 border-yellow-900",
+      Codeforces: "bg-blue-200 text-blue-900 border-blue-900",
+      CodeChef: "bg-orange-200 text-orange-900 border-orange-900",
+      AtCoder: "bg-red-200 text-red-900 border-red-900",
+      HackerRank: "bg-green-200 text-green-900 border-green-900",
+      TopCoder: "bg-indigo-200 text-indigo-900 border-indigo-900",
+      GeeksforGeeks: "bg-emerald-200 text-emerald-900 border-emerald-900",
+      HackerEarth: "bg-purple-200 text-purple-900 border-purple-900",
+      SPOJ: "bg-teal-200 text-teal-900 border-teal-900",
+      CodeSignal: "bg-pink-200 text-pink-900 border-pink-900",
+      TechGig: "bg-cyan-200 text-cyan-900 border-cyan-900",
+    };
+    return lightStyles[platform] || "bg-gray-200 text-gray-900 border-gray-900";
+  };
+
+  const filteredContests =
+    filter === "all"
+      ? contests
+      : contests.filter((c) => c.platform === filter);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      <style jsx global>{`
+        @import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap");
+
+        body {
+          font-family: "Fredoka", sans-serif;
+          background-color: ${darkMode ? "#0a0a0a" : "#ffffff"};
+          transition: background-color 0.3s ease;
+        }
+
+        .cartoon-shadow {
+          box-shadow: 4px 4px 0px 0px ${darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 1)"};
+        }
+        .cartoon-shadow-lg {
+          box-shadow: 8px 8px 0px 0px ${darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 1)"};
+        }
+        .cartoon-shadow-hover:hover {
+          transform: translate(2px, 2px);
+          box-shadow: 2px 2px 0px 0px ${darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 1)"};
+        }
+
+        @keyframes float {
+          0% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-10px) rotate(2deg);
+          }
+          100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+        }
+        .dream-company {
+          animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes swing {
+            0% { transform: rotate(2deg); }
+            50% { transform: rotate(-2deg); }
+            100% { transform: rotate(2deg); }
+        }
+        .lamp-swing {
+            animation: swing 5s ease-in-out infinite;
+            transform-origin: top center;
+        }
+        .light-cone {
+            background: radial-gradient(circle at 50% 0%, rgba(255, 255, 225, 0.15) 0%, rgba(255, 255, 255, 0.05) 40%, transparent 70%);
+            filter: blur(20px);
+            pointer-events: none;
+        }
+        .bulb-glow {
+            box-shadow: 0 0 60px 30px rgba(255, 255, 200, 0.3);
+        }
+
+        /* Hot contest pulse animation */
+        @keyframes pulse-glow {
+          0%, 100% {
+            box-shadow: 0 0 20px rgba(255, 100, 0, 0.5), 0 0 40px rgba(255, 100, 0, 0.3);
+          }
+          50% {
+            box-shadow: 0 0 30px rgba(255, 100, 0, 0.8), 0 0 60px rgba(255, 100, 0, 0.5);
+          }
+        }
+        .hot-glow {
+          animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes flicker {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.8; }
+        }
+        .flame-flicker {
+          animation: flicker 1.5s ease-in-out infinite;
+        }
+      `}</style>
+
+      {/* Navbar */}
+      <nav className={`sticky bg-transparent top-0 z-50 ${darkMode ? "bg-gray-900 border-white" : "bg-white border-black"} border-b-4 cartoon-shadow`}>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left side - Logo and Company Name */}
+            <div className="flex items-center gap-3">
+              <div className={`p-2 ${darkMode ? "bg-blue-500" : "bg-blue-400"} rounded-xl border-2 ${darkMode ? "border-white" : "border-black"} cartoon-shadow`}>
+                <Code2 className={`w-6 h-6 ${darkMode ? "text-white" : "text-black"}`} />
+              </div>
+              <span className={`text-2xl font-black ${darkMode ? "text-white" : "text-black"}`}>
+                DSA <span className={darkMode ? "text-blue-400" : "text-blue-500"}>Quest</span>
+              </span>
+            </div>
+
+            {/* Right side - Navigation Links */}
+            <div className="flex items-center gap-3">
+              <a
+                href="#docs"
+                className={`hidden md:flex items-center gap-2 px-4 py-2 ${darkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-100 text-black hover:bg-gray-200"} rounded-xl font-bold border-2 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-hover`}
+              >
+                <FileText className="w-4 h-4" />
+                Docs
+              </a>
+
+              <a
+                href="#resources"
+                className={`hidden md:flex items-center gap-2 px-4 py-2 ${darkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-100 text-black hover:bg-gray-200"} rounded-xl font-bold border-2 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-hover`}
+              >
+                <BookOpen className="w-4 h-4" />
+                Resources
+              </a>
+
+              {darkMode && (
+                <button
+                  onClick={() => setShowSpotlight(!showSpotlight)}
+                  className={`flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-xl font-bold border-2 border-white transition-all cartoon-shadow-hover`}
+                  title={showSpotlight ? "Remove Light" : "Add Light"}
+                >
+                  {showSpotlight ? <LightbulbOff className="w-5 h-5" /> : <Lightbulb className="w-5 h-5" />}
+                </button>
+              )}
+
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className={`flex items-center gap-2 px-4 py-2 ${darkMode ? "bg-yellow-500 text-black" : "bg-gray-800 text-white"} rounded-xl font-bold border-2 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-hover`}
+                aria-label="Toggle dark mode"
+              >
+                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+
+              <button
+                className={`flex items-center gap-2 px-4 py-2 ${darkMode ? "bg-green-500 hover:bg-green-600" : "bg-green-400 hover:bg-green-500"} ${darkMode ? "text-white" : "text-black"} rounded-xl font-bold border-2 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-hover`}
+              >
+                <LogIn className="w-4 h-4" />
+                <span className="hidden sm:inline">Login</span>
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </nav>
+
+      <div className="min-h-screen relative overflow-x-hidden pb-20">
+        
+        {/* STREETLIGHT EFFECT */}
+        {darkMode && showSpotlight && (
+          <div className="absolute top-0 left-0 w-full flex justify-center pointer-events-none z-20">
+            <div className="relative lamp-swing">
+              <div className="w-1 h-32 bg-gray-800 mx-auto"></div>
+              <div className="w-24 h-16 bg-gray-900 rounded-t-3xl border-b-4 border-yellow-900 relative z-10 flex justify-center">
+                 <div className="w-10 h-8 bg-yellow-100 rounded-b-full absolute -bottom-4 bulb-glow"></div>
+              </div>
+              <div className="absolute top-[100%] left-1/2 -translate-x-1/2 w-[80vw] max-w-[800px] h-[80vh] light-cone"></div>
+            </div>
+          </div>
+        )}
+        
+        <div className="fixed inset-0 pointer-events-none z-0 select-none overflow-hidden">
+          {[
+            { src: "/google-1.png", top: "8%", left: "6%" },
+            { src: "/google-2.png", bottom: "5%", right: "3%" },
+            { src: "/amazon.png", top: "18%", right: "8%" },
+            { src: "/meta.jpg", bottom: "12%", left: "5%" },
+            { src: "/microsoft.png", bottom: "20%", right: "6%" },
+            { src: "/netflix.jpg", top: "42%", left: "2%" },
+            { src: "/oracle.png", top: "35%", right: "3%" },
+            { src: "/flipkart.png", bottom: "60%", left: "10%" },
+            { src: "/zomato.png", top: "10%", right: "3%" },
+          ].map((logo, i) => (
+            <div
+              key={i}
+              className="absolute w-28 md:w-36 dream-company"
+              style={{
+                ...logo,
+                opacity: darkMode ? 0.08 : 0.12,
+                filter: darkMode
+                  ? "saturate(0.3) brightness(0.8) invert(1)"
+                  : "saturate(0.6) brightness(1.05)",
+                transform: "rotate(-12deg)",
+                animationDelay: `${i * 0.6}s`,
+              }}
+            >
+              <img
+                src={logo.src}
+                alt=""
+                className="w-full h-auto object-contain"
+                draggable={false}
+              />
+            </div>
+          ))}
         </div>
-      </main>
-    </div>
+
+        <div className="relative z-10 max-w-6xl mx-auto px-4 pt-12">
+          <div className="text-center mb-12 space-y-4">
+            <div className={`inline-block ${darkMode ? "bg-yellow-500" : "bg-yellow-300"} border-4 ${darkMode ? "border-white" : "border-black"} px-6 py-2 rounded-full cartoon-shadow transform -rotate-2 mb-4`}>
+              <span className={`flex items-center gap-2 font-bold ${darkMode ? "text-white" : "text-black"} text-lg`}>
+                <DollarSign className="w-5 h-5" /> Track your favorite contests!
+              </span>
+            </div>
+            <h1 className={`text-5xl md:text-7xl font-black ${darkMode ? "text-white" : "text-black"} drop-shadow-sm tracking-tight leading-tight`}>
+              DSA <span className={darkMode ? "text-blue-400" : "text-blue-500"}>QUEST</span>{" "}
+              <br className="md:hidden" /> BOARD
+            </h1>
+            <p className={`text-xl md:text-2xl ${darkMode ? "text-gray-400" : "text-gray-600"} font-semibold max-w-2xl mx-auto`}>
+              Grind LeetCode ➔ Crack FAANG ➔ Buy a Yacht 🛥️
+            </p>
+          </div>
+
+          <div className={`${darkMode ? "bg-gray-900 border-white" : "bg-white border-black"} border-4 rounded-3xl p-6 mb-10 cartoon-shadow-lg`}>
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+              <div className="flex flex-wrap justify-center gap-3">
+                {platforms.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setFilter(p)}
+                    className={`px-4 py-2 rounded-xl font-bold border-2 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-hover ${
+                      filter === p
+                        ? darkMode
+                          ? "bg-white text-black"
+                          : "bg-black text-white"
+                        : darkMode
+                        ? "bg-gray-800 text-white hover:bg-gray-700"
+                        : "bg-white text-black hover:bg-gray-100"
+                    }`}
+                  >
+                    {p === "all" ? "All" : p}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={fetchContests}
+                disabled={loading}
+                className={`flex items-center gap-2 px-6 py-3 ${darkMode ? "bg-pink-500 hover:bg-pink-600" : "bg-pink-400 hover:bg-pink-500"} ${darkMode ? "text-white" : "text-black"} border-2 ${darkMode ? "border-white" : "border-black"} rounded-xl font-bold cartoon-shadow-hover disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                <RefreshCw
+                  className={`w-5 h-5 ${loading ? "animate-spin" : ""}`}
+                />
+                {loading ? "Loading..." : "Refresh List"}
+              </button>
+            </div>
+
+            {lastUpdated && (
+              <div className={`text-center mt-4 text-sm font-bold ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </div>
+            )}
+          </div>
+
+          {error && (
+            <div className={`${darkMode ? "bg-red-900/30 border-red-500" : "bg-red-100 border-red-500"} border-4 rounded-3xl p-6 mb-10 cartoon-shadow flex items-center gap-4`}>
+              <AlertCircle className={`w-8 h-8 ${darkMode ? "text-red-400" : "text-red-500"} flex-shrink-0`} />
+              <div>
+                <h3 className={`font-bold text-xl ${darkMode ? "text-red-300" : "text-red-900"} mb-1`}>
+                  Oops! Something went wrong
+                </h3>
+                <p className={darkMode ? "text-red-400" : "text-red-700"}>{error}</p>
+              </div>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 space-y-4">
+              <div className={`w-20 h-20 border-8 ${darkMode ? "border-white border-t-blue-400" : "border-black border-t-blue-500"} rounded-full animate-spin`}></div>
+              <p className={`text-2xl font-bold animate-pulse ${darkMode ? "text-white" : "text-black"}`}>
+                Fetching opportunities...
+              </p>
+            </div>
+          ) : filteredContests.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 space-y-6">
+              <div className={`${darkMode ? "bg-purple-900/30 border-white" : "bg-purple-100 border-black"} border-4 rounded-full p-8 cartoon-shadow-lg`}>
+                <Trophy className={`w-24 h-24 ${darkMode ? "text-purple-400" : "text-purple-500"}`} />
+              </div>
+              <h2 className={`text-4xl font-black ${darkMode ? "text-white" : "text-black"}`}>
+                No Contests Found!
+              </h2>
+              <p className={`text-xl ${darkMode ? "text-gray-400" : "text-gray-600"} font-semibold max-w-md text-center`}>
+                {filter === "all"
+                  ? "No upcoming contests at the moment. Time to practice your skills! 💪"
+                  : `No upcoming contests on ${filter}. Try checking other platforms!`}
+              </p>
+              {filter !== "all" && (
+                <button
+                  onClick={() => setFilter("all")}
+                  className={`px-8 py-4 ${darkMode ? "bg-yellow-500 hover:bg-yellow-600" : "bg-yellow-300 hover:bg-yellow-400"} ${darkMode ? "text-white" : "text-black"} border-4 ${darkMode ? "border-white" : "border-black"} rounded-2xl font-bold text-lg cartoon-shadow-hover`}
+                >
+                  View All Platforms
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-transparent">
+              {filteredContests.map((contest) => {
+                const status = getStatus(contest.start_time, contest.duration);
+                const start = new Date(contest.start_time);
+                const platformStyle = getPlatformStyle(contest.platform);
+                const isHot = isHotContest(contest.start_time);
+
+                return (
+                  <div
+                    key={contest.id}
+                    className={`border-4 ${darkMode ? "border-white bg-gray-900" : "border-black bg-white"} rounded-3xl p-5 cartoon-shadow hover:-translate-y-2 transition-transform duration-300 flex flex-col justify-between h-full relative overflow-hidden ${isHot ? 'hot-glow' : ''}`}
+                  >
+                    {/* Hot badge */}
+                    {isHot && (
+                      <div className="absolute top-3 right-3 z-10">
+                        <div className={`flex items-center gap-1 px-3 py-1 ${darkMode ? 'bg-orange-500' : 'bg-orange-400'} text-white rounded-full border-2 ${darkMode ? 'border-white' : 'border-black'} font-black text-xs uppercase cartoon-shadow`}>
+                          <Flame className="w-4 h-4 flame-flicker" />
+                          HOT
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-bold border-2 ${platformStyle}`}
+                        >
+                          {contest.platform}
+                        </span>
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-bold ${darkMode ? "text-white" : "text-black"} border-2 ${darkMode ? "border-white" : "border-black"} ${status.color}`}
+                        >
+                          {status.text}
+                        </span>
+                      </div>
+
+                      <h3 className={`text-2xl font-black ${darkMode ? "text-white" : "text-black"} mb-4 leading-tight`}>
+                        {contest.title}
+                      </h3>
+
+                      <div className="space-y-3 mb-6">
+                        <div className={`flex items-center gap-3 p-2 ${darkMode ? "bg-gray-800" : "bg-gray-50"} rounded-xl border-2 ${darkMode ? "border-gray-700" : "border-gray-100"}`}>
+                          <div className={`p-2 ${darkMode ? "bg-purple-500" : "bg-purple-200"} rounded-lg border-2 ${darkMode ? "border-white" : "border-black"}`}>
+                            <Calendar className={`w-4 h-4 ${darkMode ? "text-white" : "text-black"}`} />
+                          </div>
+                          <div>
+                            <p className={`text-xs font-bold ${darkMode ? "text-gray-500" : "text-gray-400"} uppercase`}>
+                              Start Date
+                            </p>
+                            <p className={`font-bold ${darkMode ? "text-white" : "text-black"}`}>
+                              {start.toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className={`flex items-center gap-3 p-2 ${darkMode ? "bg-gray-800" : "bg-gray-50"} rounded-xl border-2 ${darkMode ? "border-gray-700" : "border-gray-100"}`}>
+                          <div className={`p-2 ${darkMode ? "bg-blue-500" : "bg-blue-200"} rounded-lg border-2 ${darkMode ? "border-white" : "border-black"}`}>
+                            <Clock className={`w-4 h-4 ${darkMode ? "text-white" : "text-black"}`} />
+                          </div>
+                          <div>
+                            <p className={`text-xs font-bold ${darkMode ? "text-gray-500" : "text-gray-400"} uppercase`}>
+                              Time & Duration
+                            </p>
+                            <p className={`font-bold ${darkMode ? "text-white" : "text-black"}`}>
+                              {start.toLocaleTimeString()} •{" "}
+                              {formatDuration(contest.duration)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <a
+                      href={contest.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group flex items-center justify-center gap-2 w-full py-4 ${darkMode ? "bg-yellow-500 hover:bg-green-500" : "bg-yellow-300 hover:bg-green-500"} ${darkMode ? "text-white hover:text-white" : "text-black hover:text-black"} rounded-2xl font-bold text-lg border-2 border-transparent ${darkMode ? "hover:border-white" : "hover:border-black"} transition-all`}
+                    >
+                      <span className="group-hover:hidden">Crack this!</span>
+                      <span className="hidden group-hover:inline-block">
+                        View
+                      </span>
+                      <ExternalLink className="w-5 h-5 group-hover:rotate-45 transition-transform" />
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {!loading && filteredContests.length > 0 && (
+            <div className="mt-16 text-center pb-10">
+              <div className={`inline-block p-6 ${darkMode ? "bg-red-900/30 border-white" : "bg-red-100 border-black"} border-4 border-dashed rounded-3xl`}>
+                <p className={`text-xl font-bold flex items-center gap-2 justify-center ${darkMode ? "text-pink-400" : "text-pink-500"}`}>
+                  <Briefcase className="w-6 h-6" />
+                  Every problem you solve brings you closer to that Offer Letter!
+                  <Trophy className={`w-6 h-6 ${darkMode ? "text-yellow-400" : "text-yellow-500"}`} />
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
