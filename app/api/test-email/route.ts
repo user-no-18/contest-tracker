@@ -3,7 +3,7 @@ import { sendWelcomeEmail } from '@/app/lib/email/emailService';
 
 export async function GET() {
   const result = await sendWelcomeEmail(
-    'debjyoti2409@example.com',
+    'debjyoti2409@gmail.com',
     'Debjyoti Roy'
   );
   
