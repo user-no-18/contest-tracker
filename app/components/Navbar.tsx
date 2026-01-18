@@ -14,6 +14,7 @@ import {
   LogOut,
   LayoutDashboard,
   X,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -28,7 +29,15 @@ interface NavbarProps {
 }
 
 // Welcome Popup Component
-function WelcomeLoginPopup({ onClose, onSignIn, darkMode }: { onClose: () => void; onSignIn: () => void; darkMode: boolean }) {
+function WelcomeLoginPopup({
+  onClose,
+  onSignIn,
+  darkMode,
+}: {
+  onClose: () => void;
+  onSignIn: () => void;
+  darkMode: boolean;
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
       <div
@@ -46,21 +55,35 @@ function WelcomeLoginPopup({ onClose, onSignIn, darkMode }: { onClose: () => voi
             <div
               className={`p-4 ${darkMode ? "bg-blue-500" : "bg-blue-400"} rounded-2xl border-4 ${darkMode ? "border-white" : "border-black"} cartoon-shadow`}
             >
-              <Code2 className={`w-12 h-12 ${darkMode ? "text-white" : "text-black"}`} />
+              <Code2
+                className={`w-12 h-12 ${darkMode ? "text-white" : "text-black"}`}
+              />
             </div>
           </div>
 
           <div>
-            <h2 className={`text-3xl font-black ${darkMode ? "text-white" : "text-black"} mb-2`}>
-              Welcome to DSA <span className={darkMode ? "text-blue-400" : "text-blue-500"}>Quest</span>!
+            <h2
+              className={`text-3xl font-black ${darkMode ? "text-white" : "text-black"} mb-2`}
+            >
+              Welcome to DSA{" "}
+              <span className={darkMode ? "text-blue-400" : "text-blue-500"}>
+                Quest
+              </span>
+              !
             </h2>
-            <p className={`text-lg ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+            <p
+              className={`text-lg ${darkMode ? "text-gray-300" : "text-gray-600"}`}
+            >
               Master Data Structures & Algorithms through interactive learning
             </p>
           </div>
 
-          <div className={`p-4 rounded-xl ${darkMode ? "bg-gray-700" : "bg-gray-50"} border-2 ${darkMode ? "border-white" : "border-black"}`}>
-            <ul className={`text-left space-y-2 ${darkMode ? "text-gray-200" : "text-gray-700"}`}>
+          <div
+            className={`p-4 rounded-xl ${darkMode ? "bg-gray-700" : "bg-gray-50"} border-2 ${darkMode ? "border-white" : "border-black"}`}
+          >
+            <ul
+              className={`text-left space-y-2 ${darkMode ? "text-gray-200" : "text-gray-700"}`}
+            >
               <li className="flex items-center gap-2">
                 <span className="text-green-500 text-xl">✓</span>
                 <span>Interactive problem-solving</span>
@@ -136,8 +159,8 @@ function Navbar({
 
   const handleLoginClick = () => {
     // Check if user has logged in before
-    const hasLoggedInBefore = localStorage.getItem('hasLoggedInBefore');
-    
+    const hasLoggedInBefore = localStorage.getItem("hasLoggedInBefore");
+
     if (!hasLoggedInBefore) {
       // New user - show welcome popup
       setShowWelcomePopup(true);
@@ -149,8 +172,8 @@ function Navbar({
 
   const handleSignIn = async () => {
     // Mark that user has logged in
-    localStorage.setItem('hasLoggedInBefore', 'true');
-    
+    localStorage.setItem("hasLoggedInBefore", "true");
+
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -232,7 +255,11 @@ function Navbar({
                 className={`flex items-center gap-2 px-4 py-2 ${darkMode ? "bg-yellow-500 text-black" : "bg-gray-800 text-white"} rounded-xl font-bold border-2 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-hover`}
                 aria-label="Toggle dark mode"
               >
-                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                {darkMode ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
               </button>
 
               {loading ? (
@@ -250,7 +277,13 @@ function Navbar({
                     <LayoutDashboard className="w-4 h-4" />
                     <span className="hidden sm:inline">Dashboard</span>
                   </Link>
-
+                  <Link
+                    href="/settings"
+                    className={`flex items-center bg-black gap-2 px-4 py-2 ${darkMode ? "bg-gray-800 hover:bg-gray-700" : "bg-gray-100 hover:bg-gray-200"} rounded-xl font-bold border-2 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-hover`}
+                  >
+                    <Settings className="w-4 h-4 bg-amber-950" />
+                   
+                  </Link>
                   <div className="flex items-center gap-3">
                     <img
                       src={user.user_metadata?.avatar_url || "/usericon.png"}
