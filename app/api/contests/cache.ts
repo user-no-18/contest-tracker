@@ -8,8 +8,8 @@ type CacheType = {
 // In-memory cache (lives in server RAM)
 let cache: CacheType = null;
 
-// 5 minutes
-const CACHE_DURATION = 5 * 60 * 1000;
+// 10 minutes for devault cache duration
+const CACHE_DURATION = 10 * 60 * 1000;
 
 export function getCachedData() {
   if (!cache) return null;

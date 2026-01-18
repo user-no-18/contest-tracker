@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Navbar from "./components/Navbar";
 import {
   Calendar,
   Clock,
@@ -10,14 +11,6 @@ import {
   DollarSign,
   Briefcase,
   AlertCircle,
-  Moon,
-  Sun,
-  FileText,
-  BookOpen,
-  LogIn,
-  Code2,
-  Lightbulb,
-  LightbulbOff,
   Flame,
 } from "lucide-react";
 
@@ -37,7 +30,6 @@ export default function ContestTracker() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
-  
   const [showSpotlight, setShowSpotlight] = useState(true);
 
   const platforms = [
@@ -47,7 +39,6 @@ export default function ContestTracker() {
     "CodeChef",
     "AtCoder",
     "HackerRank",
-   /*  "TopCoder", */
     "GeeksforGeeks",
     "HackerEarth",
     "SPOJ",
@@ -60,62 +51,89 @@ export default function ContestTracker() {
       const res = await fetch("/api/contests");
       const data = await res.json();
       if (data.success) {
-       
         const sortedContests = data.contests.sort((a: Contest, b: Contest) => {
           const now = new Date();
           const startA = new Date(a.start_time);
           const startB = new Date(b.start_time);
           const endA = new Date(startA.getTime() + a.duration * 1000);
           const endB = new Date(startB.getTime() + b.duration * 1000);
-          
-          // Calculate time differences in hours
-          const hoursUntilA = (startA.getTime() - now.getTime()) / (1000 * 60 * 60);
-          const hoursUntilB = (startB.getTime() - now.getTime()) / (1000 * 60 * 60);
-          
-          // Check if contest is live or hot (within 24 hours)
+
+          const hoursUntilA =
+            (startA.getTime() - now.getTime()) / (1000 * 60 * 60);
+          const hoursUntilB =
+            (startB.getTime() - now.getTime()) / (1000 * 60 * 60);
+
           const isLiveA = now >= startA && now <= endA;
           const isLiveB = now >= startB && now <= endB;
-          const isHotA = (isLiveA || (hoursUntilA >= 0 && hoursUntilA <= 24));
-          const isHotB = (isLiveB || (hoursUntilB >= 0 && hoursUntilB <= 24));
-          
-          // Define platform categories
-          const isPriorityPlatformA = a.platform === 'LeetCode' || a.platform === 'Codeforces';
-          const isPriorityPlatformB = b.platform === 'LeetCode' || b.platform === 'Codeforces';
-          
-          const majorPlatforms = ['CodeChef', 'AtCoder', 'TopCoder', 'GeeksforGeeks', 'HackerEarth', 'SPOJ'];
+          const isHotA = isLiveA || (hoursUntilA >= 0 && hoursUntilA <= 24);
+          const isHotB = isLiveB || (hoursUntilB >= 0 && hoursUntilB <= 24);
+
+          const isPriorityPlatformA =
+            a.platform === "LeetCode" || a.platform === "Codeforces";
+          const isPriorityPlatformB =
+            b.platform === "LeetCode" || b.platform === "Codeforces";
+
+          const majorPlatforms = [
+            "CodeChef",
+            "AtCoder",
+            "TopCoder",
+            "GeeksforGeeks",
+            "HackerEarth",
+            "SPOJ",
+          ];
           const isMajorA = majorPlatforms.includes(a.platform);
           const isMajorB = majorPlatforms.includes(b.platform);
-          
-          const isHackerRankA = a.platform === 'HackerRank';
-          const isHackerRankB = b.platform === 'HackerRank';
-          
-          // Time windows
+
+          const isHackerRankA = a.platform === "HackerRank";
+          const isHackerRankB = b.platform === "HackerRank";
+
           const isWithin48hA = hoursUntilA >= 0 && hoursUntilA <= 48;
           const isWithin48hB = hoursUntilB >= 0 && hoursUntilB <= 48;
           const isWithin72hA = hoursUntilA >= 0 && hoursUntilA <= 72;
           const isWithin72hB = hoursUntilB >= 0 && hoursUntilB <= 72;
-          
-          // Assign priority levels
-          const getPriority = (contest: Contest, isHot: boolean, isPriority: boolean, isMajor: boolean, isHR: boolean, within48h: boolean, within72h: boolean) => {
-            if (isHot) return 1; // HOT (live or within 24h) - HIGHEST PRIORITY
-            if (isPriority && within48h) return 2; // LC/CF within 48h
-            if (isMajor && within72h) return 3; // Major platforms within 72h
-            if (isHR) return 4; // HackerRank
-            return 5; // Rest
+
+          const getPriority = (
+            contest: Contest,
+            isHot: boolean,
+            isPriority: boolean,
+            isMajor: boolean,
+            isHR: boolean,
+            within48h: boolean,
+            within72h: boolean
+          ) => {
+            if (isHot) return 1;
+            if (isPriority && within48h) return 2;
+            if (isMajor && within72h) return 3;
+            if (isHR) return 4;
+            return 5;
           };
-          
-          const priorityA = getPriority(a, isHotA, isPriorityPlatformA, isMajorA, isHackerRankA, isWithin48hA, isWithin72hA);
-          const priorityB = getPriority(b, isHotB, isPriorityPlatformB, isMajorB, isHackerRankB, isWithin48hB, isWithin72hB);
-          
-          // Sort by priority level first
+
+          const priorityA = getPriority(
+            a,
+            isHotA,
+            isPriorityPlatformA,
+            isMajorA,
+            isHackerRankA,
+            isWithin48hA,
+            isWithin72hA
+          );
+          const priorityB = getPriority(
+            b,
+            isHotB,
+            isPriorityPlatformB,
+            isMajorB,
+            isHackerRankB,
+            isWithin48hB,
+            isWithin72hB
+          );
+
           if (priorityA !== priorityB) {
             return priorityA - priorityB;
           }
-          
-          // Within same priority, sort by start time
+
           return startA.getTime() - startB.getTime();
         });
-        
+
         setContests(sortedContests);
         setLastUpdated(new Date(data.lastUpdated));
       } else {
@@ -143,13 +161,11 @@ export default function ContestTracker() {
     return `${mins}m`;
   };
 
-  // Check if contest is within 24 hours (HOT)
   const isHotContest = (startTime: string) => {
     const now = new Date();
     const start = new Date(startTime);
     const diff = start.getTime() - now.getTime();
     const hoursUntilStart = diff / (1000 * 60 * 60);
-    // Only mark as hot if it's today or within next 24 hours
     return hoursUntilStart >= 0 && hoursUntilStart <= 24;
   };
 
@@ -159,11 +175,25 @@ export default function ContestTracker() {
     const end = new Date(start.getTime() + duration * 1000);
 
     if (now >= start && now <= end)
-      return { text: "LIVE NOW!", color: darkMode ? "bg-green-500" : "bg-green-400" };
+      return {
+        text: "LIVE NOW!",
+        color: darkMode ? "bg-green-500" : "bg-green-400",
+      };
     const diff = start.getTime() - now.getTime();
-    if (diff < 86400000) return { text: "Today!", color: darkMode ? "bg-yellow-500" : "bg-yellow-400" };
-    if (diff < 604800000) return { text: "This Week", color: darkMode ? "bg-blue-400" : "bg-blue-300" };
-    return { text: "Upcoming", color: darkMode ? "bg-gray-600" : "bg-gray-200" };
+    if (diff < 86400000)
+      return {
+        text: "Today!",
+        color: darkMode ? "bg-yellow-500" : "bg-yellow-400",
+      };
+    if (diff < 604800000)
+      return {
+        text: "This Week",
+        color: darkMode ? "bg-blue-400" : "bg-blue-300",
+      };
+    return {
+      text: "Upcoming",
+      color: darkMode ? "bg-gray-600" : "bg-gray-200",
+    };
   };
 
   const getPlatformStyle = (platform: string) => {
@@ -181,7 +211,9 @@ export default function ContestTracker() {
         CodeSignal: "bg-pink-900/50 text-pink-300 border-pink-500",
         TechGig: "bg-cyan-900/50 text-cyan-300 border-cyan-500",
       };
-      return darkStyles[platform] || "bg-gray-700/50 text-gray-300 border-gray-500";
+      return (
+        darkStyles[platform] || "bg-gray-700/50 text-gray-300 border-gray-500"
+      );
     }
 
     const lightStyles: Record<string, string> = {
@@ -197,13 +229,13 @@ export default function ContestTracker() {
       CodeSignal: "bg-pink-200 text-pink-900 border-pink-900",
       TechGig: "bg-cyan-200 text-cyan-900 border-cyan-900",
     };
-    return lightStyles[platform] || "bg-gray-200 text-gray-900 border-gray-900";
+    return (
+      lightStyles[platform] || "bg-gray-200 text-gray-900 border-gray-900"
+    );
   };
 
   const filteredContests =
-    filter === "all"
-      ? contests
-      : contests.filter((c) => c.platform === filter);
+    filter === "all" ? contests : contests.filter((c) => c.platform === filter);
 
   return (
     <>
@@ -243,30 +275,43 @@ export default function ContestTracker() {
         }
 
         @keyframes swing {
-            0% { transform: rotate(2deg); }
-            50% { transform: rotate(-2deg); }
-            100% { transform: rotate(2deg); }
-        }
-        .lamp-swing {
-            animation: swing 5s ease-in-out infinite;
-            transform-origin: top center;
-        }
-        .light-cone {
-            background: radial-gradient(circle at 50% 0%, rgba(255, 255, 225, 0.15) 0%, rgba(255, 255, 255, 0.05) 40%, transparent 70%);
-            filter: blur(20px);
-            pointer-events: none;
-        }
-        .bulb-glow {
-            box-shadow: 0 0 60px 30px rgba(255, 255, 200, 0.3);
-        }
-
-        /* Hot contest pulse animation */
-        @keyframes pulse-glow {
-          0%, 100% {
-            box-shadow: 0 0 20px rgba(255, 100, 0, 0.5), 0 0 40px rgba(255, 100, 0, 0.3);
+          0% {
+            transform: rotate(2deg);
           }
           50% {
-            box-shadow: 0 0 30px rgba(255, 100, 0, 0.8), 0 0 60px rgba(255, 100, 0, 0.5);
+            transform: rotate(-2deg);
+          }
+          100% {
+            transform: rotate(2deg);
+          }
+        }
+        .lamp-swing {
+          animation: swing 5s ease-in-out infinite;
+          transform-origin: top center;
+        }
+        .light-cone {
+          background: radial-gradient(
+            circle at 50% 0%,
+            rgba(255, 255, 225, 0.15) 0%,
+            rgba(255, 255, 255, 0.05) 40%,
+            transparent 70%
+          );
+          filter: blur(20px);
+          pointer-events: none;
+        }
+        .bulb-glow {
+          box-shadow: 0 0 60px 30px rgba(255, 255, 200, 0.3);
+        }
+
+        @keyframes pulse-glow {
+          0%,
+          100% {
+            box-shadow: 0 0 20px rgba(255, 100, 0, 0.5),
+              0 0 40px rgba(255, 100, 0, 0.3);
+          }
+          50% {
+            box-shadow: 0 0 30px rgba(255, 100, 0, 0.8),
+              0 0 60px rgba(255, 100, 0, 0.5);
           }
         }
         .hot-glow {
@@ -274,90 +319,40 @@ export default function ContestTracker() {
         }
 
         @keyframes flicker {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.8;
+          }
         }
         .flame-flicker {
           animation: flicker 1.5s ease-in-out infinite;
         }
       `}</style>
 
-      {/* Navbar */}
-      <nav className={`sticky bg-transparent top-0 z-50 ${darkMode ? "bg-gray-900 border-white" : "bg-white border-black"} border-b-4 cartoon-shadow`}>
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left side - Logo and Company Name */}
-            <div className="flex items-center gap-3">
-              <div className={`p-2 ${darkMode ? "bg-blue-500" : "bg-blue-400"} rounded-xl border-2 ${darkMode ? "border-white" : "border-black"} cartoon-shadow`}>
-                <Code2 className={`w-6 h-6 ${darkMode ? "text-white" : "text-black"}`} />
-              </div>
-              <span className={`text-2xl font-black ${darkMode ? "text-white" : "text-black"}`}>
-                DSA <span className={darkMode ? "text-blue-400" : "text-blue-500"}>Quest</span>
-              </span>
-            </div>
-
-            {/* Right side - Navigation Links */}
-            <div className="flex items-center gap-3">
-              <a
-                href="#docs"
-                className={`hidden md:flex items-center gap-2 px-4 py-2 ${darkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-100 text-black hover:bg-gray-200"} rounded-xl font-bold border-2 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-hover`}
-              >
-                <FileText className="w-4 h-4" />
-                Docs
-              </a>
-
-              <a
-                href="#resources"
-                className={`hidden md:flex items-center gap-2 px-4 py-2 ${darkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-100 text-black hover:bg-gray-200"} rounded-xl font-bold border-2 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-hover`}
-              >
-                <BookOpen className="w-4 h-4" />
-                Resources
-              </a>
-
-              {darkMode && (
-                <button
-                  onClick={() => setShowSpotlight(!showSpotlight)}
-                  className={`flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-xl font-bold border-2 border-white transition-all cartoon-shadow-hover`}
-                  title={showSpotlight ? "Remove Light" : "Add Light"}
-                >
-                  {showSpotlight ? <LightbulbOff className="w-5 h-5" /> : <Lightbulb className="w-5 h-5" />}
-                </button>
-              )}
-
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`flex items-center gap-2 px-4 py-2 ${darkMode ? "bg-yellow-500 text-black" : "bg-gray-800 text-white"} rounded-xl font-bold border-2 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-hover`}
-                aria-label="Toggle dark mode"
-              >
-                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
-
-              <button
-                className={`flex items-center gap-2 px-4 py-2 ${darkMode ? "bg-green-500 hover:bg-green-600" : "bg-green-400 hover:bg-green-500"} ${darkMode ? "text-white" : "text-black"} rounded-xl font-bold border-2 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-hover`}
-              >
-                <LogIn className="w-4 h-4" />
-                <span className="hidden sm:inline">Login</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        showSpotlight={showSpotlight}
+        setShowSpotlight={setShowSpotlight}
+      />
 
       <div className="min-h-screen relative overflow-x-hidden pb-20">
-        
         {/* STREETLIGHT EFFECT */}
         {darkMode && showSpotlight && (
           <div className="absolute top-0 left-0 w-full flex justify-center pointer-events-none z-20">
             <div className="relative lamp-swing">
               <div className="w-1 h-32 bg-gray-800 mx-auto"></div>
               <div className="w-24 h-16 bg-gray-900 rounded-t-3xl border-b-4 border-yellow-900 relative z-10 flex justify-center">
-                 <div className="w-10 h-8 bg-yellow-100 rounded-b-full absolute -bottom-4 bulb-glow"></div>
+                <div className="w-10 h-8 bg-yellow-100 rounded-b-full absolute -bottom-4 bulb-glow"></div>
               </div>
               <div className="absolute top-[100%] left-1/2 -translate-x-1/2 w-[80vw] max-w-[800px] h-[80vh] light-cone"></div>
             </div>
           </div>
         )}
-        
+
         <div className="fixed inset-0 pointer-events-none z-0 select-none overflow-hidden">
           {[
             { src: "/google-1.png", top: "8%", left: "6%" },
@@ -395,21 +390,34 @@ export default function ContestTracker() {
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 pt-12">
           <div className="text-center mb-12 space-y-4">
-            <div className={`inline-block ${darkMode ? "bg-yellow-500" : "bg-yellow-300"} border-4 ${darkMode ? "border-white" : "border-black"} px-6 py-2 rounded-full cartoon-shadow transform -rotate-2 mb-4`}>
-              <span className={`flex items-center gap-2 font-bold ${darkMode ? "text-white" : "text-black"} text-lg`}>
+            <div
+              className={`inline-block ${darkMode ? "bg-yellow-500" : "bg-yellow-300"} border-4 ${darkMode ? "border-white" : "border-black"} px-6 py-2 rounded-full cartoon-shadow transform -rotate-2 mb-4`}
+            >
+              <span
+                className={`flex items-center gap-2 font-bold ${darkMode ? "text-white" : "text-black"} text-lg`}
+              >
                 <DollarSign className="w-5 h-5" /> Track your favorite contests!
               </span>
             </div>
-            <h1 className={`text-5xl md:text-7xl font-black ${darkMode ? "text-white" : "text-black"} drop-shadow-sm tracking-tight leading-tight`}>
-              DSA <span className={darkMode ? "text-blue-400" : "text-blue-500"}>QUEST</span>{" "}
+            <h1
+              className={`text-5xl md:text-7xl font-black ${darkMode ? "text-white" : "text-black"} drop-shadow-sm tracking-tight leading-tight`}
+            >
+              DSA{" "}
+              <span className={darkMode ? "text-blue-400" : "text-blue-500"}>
+                QUEST
+              </span>{" "}
               <br className="md:hidden" /> BOARD
             </h1>
-            <p className={`text-xl md:text-2xl ${darkMode ? "text-gray-400" : "text-gray-600"} font-semibold max-w-2xl mx-auto`}>
+            <p
+              className={`text-xl md:text-2xl ${darkMode ? "text-gray-400" : "text-gray-600"} font-semibold max-w-2xl mx-auto`}
+            >
               Grind LeetCode ➔ Crack FAANG ➔ Buy a Yacht 🛥️
             </p>
           </div>
 
-          <div className={`${darkMode ? "bg-gray-900 border-white" : "bg-white border-black"} border-4 rounded-3xl p-6 mb-10 cartoon-shadow-lg`}>
+          <div
+            className={`${darkMode ? "bg-gray-900 border-white" : "bg-white border-black"} border-4 rounded-3xl p-6 mb-10 cartoon-shadow-lg`}
+          >
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="flex flex-wrap justify-center gap-3">
                 {platforms.map((p) => (
@@ -444,40 +452,62 @@ export default function ContestTracker() {
             </div>
 
             {lastUpdated && (
-              <div className={`text-center mt-4 text-sm font-bold ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+              <div
+                className={`text-center mt-4 text-sm font-bold ${darkMode ? "text-gray-500" : "text-gray-400"}`}
+              >
                 Last updated: {lastUpdated.toLocaleTimeString()}
               </div>
             )}
           </div>
 
           {error && (
-            <div className={`${darkMode ? "bg-red-900/30 border-red-500" : "bg-red-100 border-red-500"} border-4 rounded-3xl p-6 mb-10 cartoon-shadow flex items-center gap-4`}>
-              <AlertCircle className={`w-8 h-8 ${darkMode ? "text-red-400" : "text-red-500"} flex-shrink-0`} />
+            <div
+              className={`${darkMode ? "bg-red-900/30 border-red-500" : "bg-red-100 border-red-500"} border-4 rounded-3xl p-6 mb-10 cartoon-shadow flex items-center gap-4`}
+            >
+              <AlertCircle
+                className={`w-8 h-8 ${darkMode ? "text-red-400" : "text-red-500"} flex-shrink-0`}
+              />
               <div>
-                <h3 className={`font-bold text-xl ${darkMode ? "text-red-300" : "text-red-900"} mb-1`}>
+                <h3
+                  className={`font-bold text-xl ${darkMode ? "text-red-300" : "text-red-900"} mb-1`}
+                >
                   Oops! Something went wrong
                 </h3>
-                <p className={darkMode ? "text-red-400" : "text-red-700"}>{error}</p>
+                <p className={darkMode ? "text-red-400" : "text-red-700"}>
+                  {error}
+                </p>
               </div>
             </div>
           )}
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 space-y-4">
-              <div className={`w-20 h-20 border-8 ${darkMode ? "border-white border-t-blue-400" : "border-black border-t-blue-500"} rounded-full animate-spin`}></div>
-              <p className={`text-2xl font-bold animate-pulse ${darkMode ? "text-white" : "text-black"}`}>
+              <div
+                className={`w-20 h-20 border-8 ${darkMode ? "border-white border-t-blue-400" : "border-black border-t-blue-500"} rounded-full animate-spin`}
+              ></div>
+              <p
+                className={`text-2xl font-bold animate-pulse ${darkMode ? "text-white" : "text-black"}`}
+              >
                 Fetching opportunities...
               </p>
             </div>
           ) : filteredContests.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 space-y-6">
-              <div className={`${darkMode ? "bg-purple-900/30 border-white" : "bg-purple-100 border-black"} border-4 rounded-full p-8 cartoon-shadow-lg`}>
-                <Trophy className={`w-24 h-24 ${darkMode ? "text-purple-400" : "text-purple-500"}`} />
+              <div
+                className={`${darkMode ? "bg-purple-900/30 border-white" : "bg-purple-100 border-black"} border-4 rounded-full p-8 cartoon-shadow-lg`}
+              >
+                <Trophy
+                  className={`w-24 h-24 ${darkMode ? "text-purple-400" : "text-purple-500"}`}
+                />
               </div>
-              <h2 className={`text-4xl font-black ${darkMode ? "text-white" : "text-black"}`}>
+              <h2
+                className={`text-4xl font-black ${darkMode ? "text-white" : "text-black"}`}
+              >
                 No Contests Found!
               </h2>
-              <p className={`text-xl ${darkMode ? "text-gray-400" : "text-gray-600"} font-semibold max-w-md text-center`}>
+              <p
+                className={`text-xl ${darkMode ? "text-gray-400" : "text-gray-600"} font-semibold max-w-md text-center`}
+              >
                 {filter === "all"
                   ? "No upcoming contests at the moment. Time to practice your skills! 💪"
                   : `No upcoming contests on ${filter}. Try checking other platforms!`}
@@ -502,12 +532,13 @@ export default function ContestTracker() {
                 return (
                   <div
                     key={contest.id}
-                    className={`border-4 ${darkMode ? "border-white bg-gray-900" : "border-black bg-white"} rounded-3xl p-5 cartoon-shadow hover:-translate-y-2 transition-transform duration-300 flex flex-col justify-between h-full relative overflow-hidden ${isHot ? 'hot-glow' : ''}`}
+                    className={`border-4 ${darkMode ? "border-white bg-gray-900" : "border-black bg-white"} rounded-3xl p-5 cartoon-shadow hover:-translate-y-2 transition-transform duration-300 flex flex-col justify-between h-full relative overflow-hidden ${isHot ? "hot-glow" : ""}`}
                   >
-                    {/* Hot badge */}
                     {isHot && (
                       <div className="absolute top-3 right-3 z-10">
-                        <div className={`flex items-center gap-1 px-3 py-1 ${darkMode ? 'bg-orange-500' : 'bg-orange-400'} text-white rounded-full border-2 ${darkMode ? 'border-white' : 'border-black'} font-black text-xs uppercase cartoon-shadow`}>
+                        <div
+                          className={`flex items-center gap-1 px-3 py-1 ${darkMode ? "bg-orange-500" : "bg-orange-400"} text-white rounded-full border-2 ${darkMode ? "border-white" : "border-black"} font-black text-xs uppercase cartoon-shadow`}
+                        >
                           <Flame className="w-4 h-4 flame-flicker" />
                           HOT
                         </div>
@@ -528,34 +559,56 @@ export default function ContestTracker() {
                         </span>
                       </div>
 
-                      <h3 className={`text-2xl font-black ${darkMode ? "text-white" : "text-black"} mb-4 leading-tight`}>
+                      <h3
+                        className={`text-2xl font-black ${darkMode ? "text-white" : "text-black"} mb-4 leading-tight`}
+                      >
                         {contest.title}
                       </h3>
 
                       <div className="space-y-3 mb-6">
-                        <div className={`flex items-center gap-3 p-2 ${darkMode ? "bg-gray-800" : "bg-gray-50"} rounded-xl border-2 ${darkMode ? "border-gray-700" : "border-gray-100"}`}>
-                          <div className={`p-2 ${darkMode ? "bg-purple-500" : "bg-purple-200"} rounded-lg border-2 ${darkMode ? "border-white" : "border-black"}`}>
-                            <Calendar className={`w-4 h-4 ${darkMode ? "text-white" : "text-black"}`} />
+                        <div
+                          className={`flex items-center gap-3 p-2 ${darkMode ? "bg-gray-800" : "bg-gray-50"} rounded-xl border-2 ${darkMode ? "border-gray-700" : "border-gray-100"}`}
+                        >
+                          <div
+                            className={`p-2 ${darkMode ? "bg-purple-500" : "bg-purple-200"} rounded-lg border-2 ${darkMode ? "border-white" : "border-black"}`}
+                          >
+                            <Calendar
+                              className={`w-4 h-4 ${darkMode ? "text-white" : "text-black"}`}
+                            />
                           </div>
                           <div>
-                            <p className={`text-xs font-bold ${darkMode ? "text-gray-500" : "text-gray-400"} uppercase`}>
+                            <p
+                              className={`text-xs font-bold ${darkMode ? "text-gray-500" : "text-gray-400"} uppercase`}
+                            >
                               Start Date
                             </p>
-                            <p className={`font-bold ${darkMode ? "text-white" : "text-black"}`}>
+                            <p
+                              className={`font-bold ${darkMode ? "text-white" : "text-black"}`}
+                            >
                               {start.toLocaleDateString()}
                             </p>
                           </div>
                         </div>
 
-                        <div className={`flex items-center gap-3 p-2 ${darkMode ? "bg-gray-800" : "bg-gray-50"} rounded-xl border-2 ${darkMode ? "border-gray-700" : "border-gray-100"}`}>
-                          <div className={`p-2 ${darkMode ? "bg-blue-500" : "bg-blue-200"} rounded-lg border-2 ${darkMode ? "border-white" : "border-black"}`}>
-                            <Clock className={`w-4 h-4 ${darkMode ? "text-white" : "text-black"}`} />
+                        <div
+                          className={`flex items-center gap-3 p-2 ${darkMode ? "bg-gray-800" : "bg-gray-50"} rounded-xl border-2 ${darkMode ? "border-gray-700" : "border-gray-100"}`}
+                        >
+                          <div
+                            className={`p-2 ${darkMode ? "bg-blue-500" : "bg-blue-200"} rounded-lg border-2 ${darkMode ? "border-white" : "border-black"}`}
+                          >
+                            <Clock
+                              className={`w-4 h-4 ${darkMode ? "text-white" : "text-black"}`}
+                            />
                           </div>
                           <div>
-                            <p className={`text-xs font-bold ${darkMode ? "text-gray-500" : "text-gray-400"} uppercase`}>
+                            <p
+                              className={`text-xs font-bold ${darkMode ? "text-gray-500" : "text-gray-400"} uppercase`}
+                            >
                               Time & Duration
                             </p>
-                            <p className={`font-bold ${darkMode ? "text-white" : "text-black"}`}>
+                            <p
+                              className={`font-bold ${darkMode ? "text-white" : "text-black"}`}
+                            >
                               {start.toLocaleTimeString()} •{" "}
                               {formatDuration(contest.duration)}
                             </p>
@@ -584,8 +637,12 @@ export default function ContestTracker() {
 
           {!loading && filteredContests.length > 0 && (
             <div className="mt-16 text-center pb-10">
-              <div className={`inline-block p-6 ${darkMode ? "bg-red-900/30 border-white" : "bg-red-100 border-black"} border-4 border-dashed rounded-3xl`}>
-                <p className={`text-xl font-bold flex items-center gap-2 justify-center ${darkMode ? "text-pink-400" : "text-pink-500"}`}>
+              <div
+                className={`inline-block p-6 ${darkMode ? "bg-red-900/30 border-white" : "bg-red-100 border-black"} border-4 border-dashed rounded-3xl`}
+              >
+                <p
+                  className={`text-xl font-bold flex items-center gap-2 justify-center ${darkMode ? "text-pink-400" : "text-pink-500"}`}
+                >
                   <Briefcase className="w-6 h-6" />
                   Every problem you solve brings you closer to that Offer Letter!
                   <Trophy className={`w-6 h-6 ${darkMode ? "text-yellow-400" : "text-yellow-500"}`} />
