@@ -3,8 +3,8 @@ import { sendWelcomeEmail } from '@/app/lib/email/emailService';
 
 export async function GET() {
   const result = await sendWelcomeEmail(
-    'test@example.com',
-    'Test User'
+    'debjyoti2409@example.com',
+    'Debjyoti Roy'
   );
   
   return NextResponse.json(result);
