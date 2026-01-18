@@ -19,7 +19,7 @@ interface EmailOptions {
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false, // true for 465, false for other ports
+  secure: false,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,
@@ -30,10 +30,10 @@ const transporter = nodemailer.createTransport({
 export async function verifyEmailConfig() {
   try {
     await transporter.verify();
-    console.log('Email service is ready');
+    console.log('✅ Email service is ready');
     return true;
   } catch (error) {
-    console.error('Email service error:', error);
+    console.error('❌ Email service error:', error);
     return false;
   }
 }
@@ -48,10 +48,10 @@ export async function sendEmail({ to, subject, html }: EmailOptions) {
       html,
     });
 
-    console.log('Email sent:', info.messageId);
+    console.log('✅ Email sent:', info.messageId, 'to:', to);
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error('Email send error:', error);
+    console.error('❌ Email send error:', error);
     return { success: false, error };
   }
 }
@@ -61,45 +61,91 @@ function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   
-  if (hours > 0) {
+  if (hours > 0 && minutes > 0) {
     return `${hours}h ${minutes}m`;
+  } else if (hours > 0) {
+    return `${hours}h`;
   }
   return `${minutes}m`;
 }
 
+// Format date helper
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+// Format time helper
+function formatTime(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
+
 // Generate contest email HTML
 function generateContestEmailHTML(contests: Contest[], userName: string): string {
+  if (!contests || contests.length === 0) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>No Upcoming Contests</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f3f4f6; padding: 20px; margin: 0;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <div style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 40px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 32px;">🎯 DSA Quest</h1>
+          </div>
+          <div style="padding: 40px; text-align: center;">
+            <h2 style="color: #1f2937; margin: 0 0 16px 0;">Hey ${userName}! 👋</h2>
+            <p style="color: #6b7280; font-size: 16px;">No contests starting in the next 24 hours. Take this time to practice and prepare! 💪</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
   const contestRows = contests
     .map(
       (contest) => `
-    <tr style="border-bottom: 2px solid #e5e7eb;">
-      <td style="padding: 16px;">
-        <div style="display: inline-block; background: #3b82f6; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 12px;">
-          ${contest.platform}
+        <div style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 16px; background: #ffffff;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <span style="display: inline-block; background: #3b82f6; color: white; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 12px;">
+              ${contest.platform}
+            </span>
+          </div>
+          
+          <h3 style="margin: 0 0 12px 0; font-size: 18px; color: #1f2937; font-weight: bold;">
+            ${contest.title}
+          </h3>
+          
+          <div style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+            <div style="color: #6b7280; font-size: 14px;">
+              📅 ${formatDate(contest.start_time)}
+            </div>
+            <div style="color: #6b7280; font-size: 14px;">
+              🕐 ${formatTime(contest.start_time)}
+            </div>
+            <div style="color: #6b7280; font-size: 14px;">
+              ⏱️ ${formatDuration(contest.duration)}
+            </div>
+          </div>
+          
+          <a href="${contest.url}" 
+             style="display: inline-block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;">
+            Join Contest →
+          </a>
         </div>
-      </td>
-      <td style="padding: 16px;">
-        <div style="font-weight: bold; font-size: 16px; margin-bottom: 4px;">
-          ${contest.title}
-        </div>
-        <div style="color: #6b7280; font-size: 14px;">
-          ${new Date(contest.start_time).toLocaleString('en-US', {
-            dateStyle: 'medium',
-            timeStyle: 'short',
-          })}
-        </div>
-      </td>
-      <td style="padding: 16px; color: #6b7280;">
-        ${formatDuration(contest.duration)}
-      </td>
-      <td style="padding: 16px; text-align: center;">
-        <a href="${contest.url}" 
-           style="background: #10b981; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
-          Join →
-        </a>
-      </td>
-    </tr>
-  `
+      `
     )
     .join('');
 
@@ -112,7 +158,7 @@ function generateContestEmailHTML(contests: Contest[], userName: string): string
       <title>Upcoming Contests - DSA Quest</title>
     </head>
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
-      <div style="max-width: 800px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      <div style="max-width: 700px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 40px 20px; text-align: center;">
@@ -126,31 +172,19 @@ function generateContestEmailHTML(contests: Contest[], userName: string): string
 
         <!-- Content -->
         <div style="padding: 32px 20px;">
-          <h2 style="color: #1f2937; font-size: 24px; margin: 0 0 8px 0;">
+          <h2 style="color: #1f2937; font-size: 24px; margin: 0 0 8px 0; font-weight: bold;">
             Hey ${userName}! 👋
           </h2>
           <p style="color: #6b7280; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-            Here are the contests starting in the next <strong>24 hours</strong>. Time to sharpen those algorithms! 💪
+            Here ${contests.length === 1 ? 'is' : 'are'} <strong>${contests.length} contest${contests.length > 1 ? 's' : ''}</strong> starting in the next <strong>24 hours</strong>. Time to sharpen those algorithms! 💪
           </p>
 
-          <!-- Contests Table -->
-          <table style="width: 100%; border-collapse: collapse; border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
-            <thead>
-              <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-                <th style="padding: 12px; text-align: left; font-weight: bold; color: #374151;">Platform</th>
-                <th style="padding: 12px; text-align: left; font-weight: bold; color: #374151;">Contest</th>
-                <th style="padding: 12px; text-align: left; font-weight: bold; color: #374151;">Duration</th>
-                <th style="padding: 12px; text-align: center; font-weight: bold; color: #374151;">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${contestRows}
-            </tbody>
-          </table>
+          <!-- Contests List -->
+          ${contestRows}
 
           <!-- Tips Section -->
           <div style="margin-top: 32px; padding: 20px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px;">
-            <h3 style="color: #92400e; margin: 0 0 8px 0; font-size: 18px;">
+            <h3 style="color: #92400e; margin: 0 0 12px 0; font-size: 18px; font-weight: bold;">
               💡 Quick Tips
             </h3>
             <ul style="color: #78350f; margin: 0; padding-left: 20px; line-height: 1.8;">
@@ -169,21 +203,18 @@ function generateContestEmailHTML(contests: Contest[], userName: string): string
           </p>
           <div style="margin-bottom: 16px;">
             <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" 
-               style="background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin-right: 8px;">
+               style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-right: 8px;">
               View Dashboard
             </a>
             <a href="${process.env.NEXT_PUBLIC_APP_URL}/resources" 
-               style="background: #6b7280; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+               style="display: inline-block; background: #6b7280; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
               Study Resources
             </a>
           </div>
           <p style="color: #9ca3af; font-size: 12px; margin: 0;">
             You're receiving this because you enabled contest notifications in DSA Quest.<br>
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/settings" style="color: #3b82f6; text-decoration: none;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="color: #3b82f6; text-decoration: none;">
               Update preferences
-            </a> | 
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/settings" style="color: #3b82f6; text-decoration: none;">
-              Unsubscribe
             </a>
           </p>
         </div>
@@ -199,15 +230,27 @@ export async function sendDailyContestDigest(
   userName: string,
   contests: Contest[]
 ) {
-  if (contests.length === 0) {
-    console.log(`No contests for ${userEmail}, skipping email`);
+  console.log(`📧 Preparing email for ${userEmail} with ${contests.length} contests`);
+
+  if (!contests || contests.length === 0) {
+    console.log(`⚠️ No contests for ${userEmail}, skipping email`);
     return { success: true, skipped: true };
   }
 
   const subject = `🔥 ${contests.length} Contest${contests.length > 1 ? 's' : ''} Starting Soon!`;
   const html = generateContestEmailHTML(contests, userName);
 
-  return sendEmail({ to: userEmail, subject, html });
+  console.log(`📤 Sending email to ${userEmail}: ${subject}`);
+  
+  const result = await sendEmail({ to: userEmail, subject, html });
+  
+  if (result.success) {
+    console.log(`✅ Email sent successfully to ${userEmail}`);
+  } else {
+    console.error(`❌ Failed to send email to ${userEmail}:`, result.error);
+  }
+  
+  return result;
 }
 
 // Send welcome email
@@ -220,7 +263,7 @@ export async function sendWelcomeEmail(userEmail: string, userName: string) {
       <meta charset="utf-8">
       <title>Welcome to DSA Quest</title>
     </head>
-    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f3f4f6; padding: 20px;">
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f3f4f6; padding: 20px; margin: 0;">
       <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         <div style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 40px; text-align: center;">
           <h1 style="color: white; margin: 0; font-size: 36px;">🎉 Welcome!</h1>
@@ -241,7 +284,7 @@ export async function sendWelcomeEmail(userEmail: string, userName: string) {
           </div>
           <div style="text-align: center; margin-top: 32px;">
             <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" 
-               style="background: #3b82f6; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 16px;">
+               style="display: inline-block; background: #3b82f6; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 16px;">
               Go to Dashboard →
             </a>
           </div>
