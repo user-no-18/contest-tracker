@@ -128,7 +128,7 @@ export default function Dashboard() {
         }
       `}</style>
 
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+      {/* <Navbar darkMode={darkMode} setDarkMode={setDarkMode} /> */}
 
       <div className="min-h-screen pb-20">
         <div className="max-w-7xl mx-auto px-4 pt-12">

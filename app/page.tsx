@@ -12,6 +12,8 @@ import {
   Briefcase,
   AlertCircle,
   Flame,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 interface Contest {
@@ -332,12 +334,33 @@ export default function ContestTracker() {
         }
       `}</style>
 
-      <Navbar
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-        showSpotlight={showSpotlight}
-        setShowSpotlight={setShowSpotlight}
-      />
+      <Navbar darkMode={darkMode} />
+
+      {/* Dark Mode Toggle - Fixed Bottom Right */}
+    {/* <button
+  onClick={() => setDarkMode(!darkMode)}
+  className={`
+    fixed right-4 
+    top-20 sm:top-24 md:top-6 lg:top-32 
+    z-50
+    p-2 sm:p-3 md:p-4
+    ${darkMode ? "bg-yellow-500 text-black" : "bg-gray-800 text-white"}
+    rounded-full
+    border-2 md:border-4
+    ${darkMode ? "border-white" : "border-black"}
+    transition-all cartoon-shadow-lg
+    hover:scale-110
+  `}
+  aria-label="Toggle dark mode"
+  title={darkMode ? "Light Mode" : "Dark Mode"}
+>
+  {darkMode ? (
+    <Sun className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+  ) : (
+    <Moon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+  )}
+</button> */}
+
 
       <div className="min-h-screen relative overflow-x-hidden pb-20">
         {/* STREETLIGHT EFFECT */}

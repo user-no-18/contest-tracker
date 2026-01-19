@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Navbar from "../components/Navbar";
 import {
   BookOpen,
   Target,
@@ -170,25 +171,18 @@ export default function DSAKnowledgeHub() {
         }
       `}</style>
 
-      {/* --- Navbar --- */}
-      <nav className={`sticky top-0 z-50 ${darkMode ? "bg-gray-900 border-white" : "bg-white border-black"} border-b-4 cartoon-shadow`}>
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 ${darkMode ? "bg-blue-500" : "bg-blue-400"} rounded-xl border-2 ${darkMode ? "border-white" : "border-black"} cartoon-shadow`}>
-              <Brain className={`w-6 h-6 ${darkMode ? "text-white" : "text-black"}`} />
-            </div>
-            <span className={`text-2xl font-black ${darkMode ? "text-white" : "text-black"}`}>
-              DSA <span className={darkMode ? "text-blue-400" : "text-blue-500"}>HUB</span>
-            </span>
-          </div>
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={`p-2 ${darkMode ? "bg-yellow-500 text-black" : "bg-gray-800 text-white"} rounded-xl border-2 ${darkMode ? "border-white" : "border-black"} cartoon-shadow-hover`}
-          >
-            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
-        </div>
-      </nav>
+      {/* Real Navbar Component */}
+      <Navbar darkMode={darkMode} />
+
+      {/* Dark Mode Toggle - Fixed Bottom Right */}
+      {/* <button
+        onClick={() => setDarkMode(!darkMode)}
+        className={`fixed bottom-6 right-6 z-40 p-4 ${darkMode ? "bg-yellow-500 text-black" : "bg-gray-800 text-white"} rounded-full border-4 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-lg hover:scale-110`}
+        aria-label="Toggle dark mode"
+        title={darkMode ? "Light Mode" : "Dark Mode"}
+      >
+        {darkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+      </button> */}
 
       <div className="min-h-screen pb-20">
         <div className="max-w-6xl mx-auto px-4 pt-12">
