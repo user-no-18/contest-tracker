@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
+import { createClient } from "../lib/supabase/client";
+import { User } from "@supabase/supabase-js";
 import {
   BookOpen,
   Target,
@@ -13,10 +15,24 @@ import {
   Server,
   Cpu,
   Database,
-  Hash
+  Hash,
+  FileSpreadsheet,
+  Book,
+  GraduationCap,
+  TrendingUp,
+  Code
 } from "lucide-react";
 
 export default function DSAKnowledgeHub() {
+  const [user, setUser] = useState<User | null>(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+  }, []);
+
   const [darkMode, setDarkMode] = useState(false);
   const [activeCompany, setActiveCompany] = useState("Google");
 
@@ -53,6 +69,103 @@ export default function DSAKnowledgeHub() {
       emphasis: "Heavy on geometry, graphs, and concurrency. Expect problems related to maps, routes, and scheduling.",
     },
   };
+
+  // --- Data: Pattern-Based Problem Lists ---
+  const problemLists = [
+    {
+      title: "NeetCode 150 + Blind 75",
+      audience: "Interview preparation (beginner to intermediate)",
+      desc: "A structured breakdown of 150 problems organized by pattern. Each problem includes video explanations and optimized solutions. The Blind 75 subset covers the most frequently asked interview questions across FAANG companies.",
+      link: "https://neetcode.io/practice",
+      icon: <Code className="w-6 h-6" />
+    },
+    {
+      title: "Sean Prashad's LeetCode Patterns",
+      audience: "Intermediate practitioners seeking pattern recognition",
+      desc: "A comprehensive spreadsheet categorizing 200+ problems into 14 core patterns. Includes difficulty ratings and links to LeetCode problems. Effective for identifying which patterns require more practice.",
+      link: "https://seanprashad.com/leetcode-patterns/",
+      icon: <FileSpreadsheet className="w-6 h-6" />
+    },
+    {
+      title: "Striver's A2Z DSA Sheet",
+      audience: "Comprehensive DSA learning (beginner to advanced)",
+      desc: "A complete roadmap with 450+ problems covering every major topic from basic arrays to advanced graph algorithms. Each section includes theory explanations, problem sets, and video tutorials.",
+      link: "https://takeuforward.org/strivers-a2z-dsa-course/strivers-a2z-dsa-course-sheet-2",
+      icon: <Map className="w-6 h-6" />
+    },
+    {
+      title: "Fraz's DSA Sheet",
+      audience: "Interview preparation with focus on pattern mastery",
+      desc: "A Google Sheet with 250+ problems organized by company frequency and pattern type. Includes columns for tracking progress, notes, and solution approaches. Particularly useful for targeting specific companies.",
+      link: "https://docs.google.com/spreadsheets/d/1-wKcV99KtO91dXdPkwmXGTdtyxAfk1mbPXQg81R9sFE/",
+      icon: <TrendingUp className="w-6 h-6" />
+    },
+    {
+      title: "Love Babbar's DSA Sheet",
+      audience: "Comprehensive interview preparation",
+      desc: "450 problems categorized by topic and difficulty. Focuses on building strong fundamentals before progressing to advanced patterns. Includes time complexity expectations for each problem.",
+      link: "https://drive.google.com/file/d/1FMdN_OCfOI0iAeDlqswCiC2DZzD4nPsb/",
+      icon: <GraduationCap className="w-6 h-6" />
+    }
+  ];
+
+  // --- Data: Books & Resources ---
+  const books = [
+    {
+      category: "Algorithm Design",
+      title: "Introduction to Algorithms (CLRS)",
+      authors: "Cormen, Leiserson, Rivest, Stein",
+      level: "Intermediate to advanced",
+      desc: "The canonical reference for algorithm design and analysis. Comprehensive coverage of sorting, graph algorithms, dynamic programming, NP-completeness, and complexity theory. Dense but authoritative.",
+      link: "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+    },
+    {
+      category: "Free Textbook",
+      title: "Algorithms by Jeff Erickson",
+      authors: "Jeff Erickson (University of Illinois)",
+      level: "Intermediate",
+      desc: "A freely available textbook covering recursion, backtracking, dynamic programming, greedy algorithms, and graph algorithms. Written with clarity and includes extensive problem sets. Particularly strong on explaining algorithmic thinking.",
+      link: "http://jeffe.cs.illinois.edu/teaching/algorithms/"
+    },
+    {
+      category: "Competitive Programming",
+      title: "Competitive Programmer's Handbook",
+      authors: "Antti Laaksonen",
+      level: "Beginner to intermediate CP",
+      desc: "A concise 300-page guide covering essential competitive programming techniques. Topics include number theory, graph algorithms, range queries, and geometry. Includes code examples in C++.",
+      link: "https://cses.fi/book/book.pdf"
+    },
+    {
+      category: "Advanced Algorithms",
+      title: "CP-Algorithms",
+      authors: "CP-Algorithms community",
+      level: "Intermediate to advanced",
+      desc: "An extensive wiki-style resource documenting advanced algorithms with mathematical proofs and implementation details. Covers segment trees, suffix structures, FFT, flows, and string algorithms. Essential reference for competitive programmers.",
+      link: "https://cp-algorithms.com/"
+    }
+  ];
+
+  // --- Data: Learning Roadmaps ---
+  const roadmaps = [
+    {
+      title: "USACO Guide",
+      audience: "Competitive programming beginners through advanced",
+      desc: "A complete roadmap from basic programming to IOI-level competitive programming. Organized into modules by difficulty (Bronze, Silver, Gold, Platinum). Each module includes theory, practice problems, and editorial solutions. Covers standard algorithms systematically.",
+      link: "https://usaco.guide/"
+    },
+    {
+      title: "Tech Interview Handbook",
+      audience: "Interview preparation with 8-week study plan",
+      desc: "A systematic study plan covering essential interview topics. Organized by pattern with time allocation recommendations. Includes behavioral interview preparation and system design fundamentals. Created by Yangshun Tay.",
+      link: "https://www.techinterviewhandbook.org/algorithms/study-cheatsheet/"
+    },
+    {
+      title: "Grind 75",
+      audience: "Interview preparation with time constraints",
+      desc: "An adaptive question list that adjusts based on available study time. Focuses on high-frequency interview questions with optimal time investment. Covers fundamental patterns with increasing difficulty.",
+      link: "https://www.techinterviewhandbook.org/grind75"
+    }
+  ];
 
   // --- Data: Curated Resources (Updated for Product Focus) ---
   const resources = [
@@ -100,7 +213,7 @@ export default function DSAKnowledgeHub() {
     { title: "Sliding Window", icon: "🪟", desc: "Subarrays/Substrings. Expand window to satisfy condition, shrink to optimize size." },
     { title: "Slow & Fast Pointers", icon: "🐢", desc: "Cycle detection (Linked List/Array). Middle of list. Happy Number problems." },
     { title: "Monotonic Stack", icon: "📚", desc: "Next Greater Element. Daily Temperatures. Largest Rectangle in Histogram." },
-    { title: "Binary Search Answer", icon: "🔍", desc: "Optimization problems. When asked 'Minimize the Maximum' or 'Smallest capacity'. " },
+    { title: "Binary Search Answer", icon: "🔍", desc: "Optimization problems. When asked 'Minimize the Maximum' or 'Smallest capacity'." },
     { title: "Topological Sort", icon: "🕸️", desc: "Dependencies. Course Schedule problems. Build order. Cycle detection in directed graphs." },
     { title: "Backtracking", icon: "🌲", desc: "Permutations, Subsets, Sudoku Solver. Generate all possibilities and prune invalid paths." },
     { title: "Modified BFS", icon: "🌊", desc: "Shortest path in Grid/Graph. Multi-source BFS (Rotting Oranges). 0-1 BFS." },
@@ -119,7 +232,7 @@ export default function DSAKnowledgeHub() {
     {
       category: "Interview Prep",
       title: "LeetCode Patterns",
-      source: "Seaan Prasad",
+      source: "Sean Prashad",
       desc: "A legendary blog post breaking down the 14 patterns to ace any coding interview.",
       link: "https://seanprashad.com/leetcode-patterns/",
       color: "border-green-500",
@@ -175,7 +288,7 @@ export default function DSAKnowledgeHub() {
               🚀 Zero to FAANG Roadmap
             </div>
             <h1 className={`text-5xl md:text-7xl font-black ${darkMode ? "text-white" : "text-black"} leading-tight`}>
-              PRODUCT <span className={darkMode ? "text-yellow-400" : "text-yellow-500"}>&</span><br/>
+              DATA STRUCTURES <span className={darkMode ? "text-yellow-400" : "text-yellow-500"}>&</span><br/>
               <span className={darkMode ? "text-blue-400" : "text-blue-500"}>ALGORITHMS</span>
             </h1>
             <p className={`text-xl ${darkMode ? "text-gray-400" : "text-gray-600"} font-semibold max-w-2xl mx-auto`}>
@@ -183,7 +296,7 @@ export default function DSAKnowledgeHub() {
             </p>
           </div>
 
-          {/* --- Section 1: Product-Focused Resources --- */}
+          {/* --- Section 1: The Toolkit --- */}
           <div className="mb-20">
             <div className="flex items-center gap-3 mb-8">
               <Database className={`w-8 h-8 ${darkMode ? "text-green-400" : "text-green-600"}`} />
@@ -226,7 +339,7 @@ export default function DSAKnowledgeHub() {
             </div>
           </div>
 
-          {/* --- Section 3: Expanded Pattern Library --- */}
+          {/* --- Section 3: Identify The Pattern --- */}
           <div className="mb-20">
             <div className="flex items-center gap-3 mb-8">
               <Hash className={`w-8 h-8 ${darkMode ? "text-purple-400" : "text-purple-600"}`} />
@@ -243,7 +356,109 @@ export default function DSAKnowledgeHub() {
             </div>
           </div>
 
-          {/* --- Section 4: Company Radar --- */}
+          {/* --- Section 4: Pattern-Based Problem Lists --- */}
+          <div className="mb-20">
+            <div className="flex items-center gap-3 mb-8">
+              <FileSpreadsheet className={`w-8 h-8 ${darkMode ? "text-blue-400" : "text-blue-600"}`} />
+              <h2 className={`text-3xl font-black ${darkMode ? "text-white" : "text-black"}`}>Curated Problem Lists by Pattern</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {problemLists.map((list, idx) => (
+                <div key={idx} className={`relative p-6 rounded-3xl border-4 ${darkMode ? "border-white bg-gray-900" : "border-black bg-white"} cartoon-shadow hover:-translate-y-2 transition-transform`}>
+                  <div className={`inline-block p-3 rounded-xl border-2 ${darkMode ? "border-white bg-gray-800" : "border-black bg-gray-100"} mb-4`}>
+                    {list.icon}
+                  </div>
+                  <h3 className={`text-xl font-black mb-1 ${darkMode ? "text-white" : "text-black"}`}>{list.title}</h3>
+                  <p className={`text-xs font-bold uppercase mb-3 ${darkMode ? "text-blue-400" : "text-blue-600"}`}>
+                    {list.audience}
+                  </p>
+                  <p className={`${darkMode ? "text-gray-400" : "text-gray-600"} mb-6 font-semibold text-sm`}>
+                    {list.desc}
+                  </p>
+                  
+                  <a 
+                    href={list.link} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className={`flex items-center gap-2 font-bold ${darkMode ? "text-yellow-400 hover:text-yellow-300" : "text-black hover:text-blue-600"} transition-colors`}
+                  >
+                    Open Resource <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* --- Section 5: Books & Reading Material --- */}
+          <div className="mb-20">
+            <div className="flex items-center gap-3 mb-8">
+              <Book className={`w-8 h-8 ${darkMode ? "text-purple-400" : "text-purple-600"}`} />
+              <h2 className={`text-3xl font-black ${darkMode ? "text-white" : "text-black"}`}>Books & Reading Material</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {books.map((book, idx) => (
+                <div key={idx} className={`relative p-6 rounded-3xl border-4 ${darkMode ? "border-white bg-gray-900" : "border-black bg-white"} cartoon-shadow hover:-translate-y-2 transition-transform`}>
+                  <span className={`text-xs font-black uppercase px-2 py-1 rounded border-2 ${darkMode ? "border-white text-white bg-gray-800" : "border-black text-black bg-gray-100"} inline-block mb-3`}>
+                    {book.category}
+                  </span>
+                  <h3 className={`text-xl font-black mb-1 ${darkMode ? "text-white" : "text-black"}`}>{book.title}</h3>
+                  <p className={`text-sm font-bold mb-1 ${darkMode ? "text-blue-400" : "text-blue-600"}`}>
+                    {book.authors}
+                  </p>
+                  <p className={`text-xs font-bold uppercase mb-3 ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
+                    Level: {book.level}
+                  </p>
+                  <p className={`${darkMode ? "text-gray-400" : "text-gray-600"} mb-6 font-semibold text-sm`}>
+                    {book.desc}
+                  </p>
+                  
+                  <a 
+                    href={book.link} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className={`flex items-center gap-2 font-bold ${darkMode ? "text-yellow-400 hover:text-yellow-300" : "text-black hover:text-blue-600"} transition-colors`}
+                  >
+                    Access Book <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* --- Section 6: Learning Roadmaps --- */}
+          <div className="mb-20">
+            <div className="flex items-center gap-3 mb-8">
+              <Map className={`w-8 h-8 ${darkMode ? "text-green-400" : "text-green-600"}`} />
+              <h2 className={`text-3xl font-black ${darkMode ? "text-white" : "text-black"}`}>Structured Learning Roadmaps</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {roadmaps.map((roadmap, idx) => (
+                <div key={idx} className={`relative p-6 rounded-3xl border-4 ${darkMode ? "border-white bg-gray-900" : "border-black bg-white"} cartoon-shadow hover:-translate-y-2 transition-transform`}>
+                  <h3 className={`text-xl font-black mb-2 ${darkMode ? "text-white" : "text-black"}`}>{roadmap.title}</h3>
+                  <p className={`text-xs font-bold uppercase mb-3 ${darkMode ? "text-blue-400" : "text-blue-600"}`}>
+                    {roadmap.audience}
+                  </p>
+                  <p className={`${darkMode ? "text-gray-400" : "text-gray-600"} mb-6 font-semibold text-sm`}>
+                    {roadmap.desc}
+                  </p>
+                  
+                  <a 
+                    href={roadmap.link} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className={`flex items-center gap-2 font-bold ${darkMode ? "text-yellow-400 hover:text-yellow-300" : "text-black hover:text-blue-600"} transition-colors`}
+                  >
+                    View Roadmap <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* --- Section 7: Company Radar --- */}
           <div className="mb-24">
             <div className="flex items-center gap-3 mb-8">
               <Briefcase className={`w-8 h-8 ${darkMode ? "text-yellow-400" : "text-yellow-600"}`} />
@@ -272,6 +487,7 @@ export default function DSAKnowledgeHub() {
                 ))}
               </div>
 
+
               {/* Content */}
               <div className="p-8">
                 <div className="flex flex-col md:flex-row gap-8">
@@ -298,7 +514,7 @@ export default function DSAKnowledgeHub() {
             </div>
           </div>
 
-          {/* --- Section 5: The Library (Blogs & Advanced Reads) --- */}
+          {/* --- Section 8: The Library (Blogs & Advanced Reads) --- */}
           <div className="mb-20">
             <div className="flex items-center gap-3 mb-8">
               <Coffee className={`w-8 h-8 ${darkMode ? "text-orange-400" : "text-orange-600"}`} />

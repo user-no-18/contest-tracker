@@ -211,10 +211,10 @@ function Navbar({ darkMode, setDarkMode }: NavbarProps) {
             ) : (
               <button
                 onClick={handleSignIn}
-                className={`flex items-center gap-1.5 px-3 py-2 ${darkMode ? "bg-green-500 hover:bg-green-600" : "bg-green-400 hover:bg-green-500"} ${darkMode ? "text-white" : "text-black"} rounded-lg font-bold text-sm border-2 ${darkMode ? "border-white" : "border-black"} transition-all`}
+                className={`flex items-center gap-1.5 px-3 py-2 ${darkMode ? "bg-green-500 hover:bg-green-600" : "bg-red-600 hover:bg-green-500"} ${darkMode ? "text-white" : "text-white"} rounded-lg font-bold text-sm border-2 ${darkMode ? "border-white" : "border-black"} transition-all`}
               >
                 <LogIn className="w-4 h-4" />
-                Login
+                Enter
               </button>
             )}
           </div>
@@ -308,7 +308,7 @@ function Navbar({ darkMode, setDarkMode }: NavbarProps) {
             ) : (
               <button
                 onClick={handleSignIn}
-                className={`w-full flex items-center gap-2 px-4 py-3 ${darkMode ? "bg-green-500 hover:bg-green-600" : "bg-green-400 hover:bg-green-500"} ${darkMode ? "text-white" : "text-black"} rounded-lg font-bold border-2 ${darkMode ? "border-white" : "border-black"}`}
+                className={`w-full flex items-center gap-2 px-4 py-3 ${darkMode ? "bg-green-500 hover:bg-green-600" : "bg-red-600 "} ${darkMode ? "text-white" : "text-white"} rounded-lg font-bold border-2 ${darkMode ? "border-white" : "border-black"}`}
               >
                 <LogIn className="w-4 h-4" />
                 Login with Google
