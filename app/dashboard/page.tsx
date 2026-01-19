@@ -101,8 +101,8 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="w-20 h-20 border-8 border-white border-t-blue-400 rounded-full animate-spin"></div>
+      <div className={`min-h-screen flex items-center justify-center ${darkMode ? "bg-gray-900" : "bg-white"}`}>
+        <div className={`w-20 h-20 border-8 ${darkMode ? "border-white border-t-blue-400" : "border-black border-t-blue-500"} rounded-full animate-spin`}></div>
       </div>
     );
   }
@@ -128,7 +128,7 @@ export default function Dashboard() {
         }
       `}</style>
 
-      {/* <Navbar darkMode={darkMode} setDarkMode={setDarkMode} /> */}
+      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
       <div className="min-h-screen pb-20">
         <div className="max-w-7xl mx-auto px-4 pt-12">

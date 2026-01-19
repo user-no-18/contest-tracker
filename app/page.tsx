@@ -12,8 +12,6 @@ import {
   Briefcase,
   AlertCircle,
   Flame,
-  Moon,
-  Sun,
 } from "lucide-react";
 
 interface Contest {
@@ -32,7 +30,6 @@ export default function ContestTracker() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
-  const [showSpotlight, setShowSpotlight] = useState(true);
 
   const platforms = [
     "all",
@@ -276,35 +273,6 @@ export default function ContestTracker() {
           animation: float 6s ease-in-out infinite;
         }
 
-        @keyframes swing {
-          0% {
-            transform: rotate(2deg);
-          }
-          50% {
-            transform: rotate(-2deg);
-          }
-          100% {
-            transform: rotate(2deg);
-          }
-        }
-        .lamp-swing {
-          animation: swing 5s ease-in-out infinite;
-          transform-origin: top center;
-        }
-        .light-cone {
-          background: radial-gradient(
-            circle at 50% 0%,
-            rgba(255, 255, 225, 0.15) 0%,
-            rgba(255, 255, 255, 0.05) 40%,
-            transparent 70%
-          );
-          filter: blur(20px);
-          pointer-events: none;
-        }
-        .bulb-glow {
-          box-shadow: 0 0 60px 30px rgba(255, 255, 200, 0.3);
-        }
-
         @keyframes pulse-glow {
           0%,
           100% {
@@ -334,48 +302,11 @@ export default function ContestTracker() {
         }
       `}</style>
 
-      <Navbar darkMode={darkMode} />
-
-      {/* Dark Mode Toggle - Fixed Bottom Right */}
-    {/* <button
-  onClick={() => setDarkMode(!darkMode)}
-  className={`
-    fixed right-4 
-    top-20 sm:top-24 md:top-6 lg:top-32 
-    z-50
-    p-2 sm:p-3 md:p-4
-    ${darkMode ? "bg-yellow-500 text-black" : "bg-gray-800 text-white"}
-    rounded-full
-    border-2 md:border-4
-    ${darkMode ? "border-white" : "border-black"}
-    transition-all cartoon-shadow-lg
-    hover:scale-110
-  `}
-  aria-label="Toggle dark mode"
-  title={darkMode ? "Light Mode" : "Dark Mode"}
->
-  {darkMode ? (
-    <Sun className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
-  ) : (
-    <Moon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
-  )}
-</button> */}
-
+      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
       <div className="min-h-screen relative overflow-x-hidden pb-20">
-        {/* STREETLIGHT EFFECT */}
-        {darkMode && showSpotlight && (
-          <div className="absolute top-0 left-0 w-full flex justify-center pointer-events-none z-20">
-            <div className="relative lamp-swing">
-              <div className="w-1 h-32 bg-gray-800 mx-auto"></div>
-              <div className="w-24 h-16 bg-gray-900 rounded-t-3xl border-b-4 border-yellow-900 relative z-10 flex justify-center">
-                <div className="w-10 h-8 bg-yellow-100 rounded-b-full absolute -bottom-4 bulb-glow"></div>
-              </div>
-              <div className="absolute top-[100%] left-1/2 -translate-x-1/2 w-[80vw] max-w-[800px] h-[80vh] light-cone"></div>
-            </div>
-          </div>
-        )}
-
+        {/* Background Company Logos */}
+        
         <div className="fixed inset-0 pointer-events-none z-0 select-none overflow-hidden">
           {[
             { src: "/google-1.png", top: "8%", left: "6%" },
@@ -427,9 +358,9 @@ export default function ContestTracker() {
             >
               DSA{" "}
               <span className={darkMode ? "text-blue-400" : "text-blue-500"}>
-                QUEST
+                {darkMode ? "NIGHT" : "QUEST"}
               </span>{" "}
-              <br className="md:hidden" /> BOARD
+              <br className="md:hidden" /> {darkMode ? "GRIND" : "BOARD"}
             </h1>
             <p
               className={`text-xl md:text-2xl ${darkMode ? "text-gray-400" : "text-gray-600"} font-semibold max-w-2xl mx-auto`}

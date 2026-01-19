@@ -5,21 +5,14 @@ import Navbar from "../components/Navbar";
 import {
   BookOpen,
   Target,
-  Brain,
   Lightbulb,
-  TrendingUp,
-  Code2,
-  ArrowRight,
   Briefcase,
   ExternalLink,
-  Moon,
-  Sun,
   Map,
   Coffee,
   Server,
   Cpu,
   Database,
-  Globe,
   Hash
 } from "lucide-react";
 
@@ -86,7 +79,7 @@ export default function DSAKnowledgeHub() {
       title: "NeetCode 150",
       desc: "Focuses on patterns. If you know the syntax but can't find the logic, do this roadmap.",
       link: "https://neetcode.io/roadmap",
-      icon: <Brain className="w-6 h-6" />,
+      icon: <BookOpen className="w-6 h-6" />,
       color: "bg-purple-300",
       darkColor: "bg-purple-900/50",
     },
@@ -171,18 +164,7 @@ export default function DSAKnowledgeHub() {
         }
       `}</style>
 
-      {/* Real Navbar Component */}
-      <Navbar darkMode={darkMode} />
-
-      {/* Dark Mode Toggle - Fixed Bottom Right */}
-      {/* <button
-        onClick={() => setDarkMode(!darkMode)}
-        className={`fixed bottom-6 right-6 z-40 p-4 ${darkMode ? "bg-yellow-500 text-black" : "bg-gray-800 text-white"} rounded-full border-4 ${darkMode ? "border-white" : "border-black"} transition-all cartoon-shadow-lg hover:scale-110`}
-        aria-label="Toggle dark mode"
-        title={darkMode ? "Light Mode" : "Dark Mode"}
-      >
-        {darkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
-      </button> */}
+      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
       <div className="min-h-screen pb-20">
         <div className="max-w-6xl mx-auto px-4 pt-12">
@@ -341,7 +323,7 @@ export default function DSAKnowledgeHub() {
           </div>
           
            {/* --- Footer --- */}
-           <div className="text-center py-10 border-t-4 border-dashed border-gray-300 dark:border-gray-800">
+           <div className={`text-center py-10 border-t-4 border-dashed ${darkMode ? "border-gray-800" : "border-gray-300"}`}>
              <p className={`font-bold ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
                "The best time to plant a tree was 20 years ago. The second best time is now."
              </p>

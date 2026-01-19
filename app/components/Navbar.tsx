@@ -12,15 +12,18 @@ import {
   ChevronDown,
   Menu,
   X,
+  Moon,
+  Sun,
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "../lib/supabase/client";
 
 interface NavbarProps {
   darkMode: boolean;
+  setDarkMode: (value: boolean) => void;
 }
 
-function Navbar({ darkMode }: NavbarProps) {
+function Navbar({ darkMode, setDarkMode }: NavbarProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -81,6 +84,10 @@ function Navbar({ darkMode }: NavbarProps) {
     setShowMobileMenu(false);
   };
 
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
   return (
     <nav
       className={`sticky top-0 z-50 ${darkMode ? "bg-gray-900 border-white" : "bg-white border-black"} border-b-4 cartoon-shadow`}
@@ -123,6 +130,20 @@ function Navbar({ darkMode }: NavbarProps) {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-2">
+            {/* Dark Mode Toggle - Desktop */}
+            <button
+              onClick={toggleDarkMode}
+              className={`p-2 ${darkMode ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-800 hover:bg-gray-700"} ${darkMode ? "text-black" : "text-white"} rounded-lg border-2 ${darkMode ? "border-white" : "border-black"} transition-all`}
+              aria-label="Toggle dark mode"
+              title={darkMode ? "Light Mode" : "Dark Mode"}
+            >
+              {darkMode ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </button>
+
             <Link
               href="/resources"
               className={`flex items-center gap-1.5 px-3 py-2 ${darkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-100 text-black hover:bg-gray-200"} rounded-lg font-bold text-sm border-2 ${darkMode ? "border-white" : "border-black"} transition-all`}
@@ -198,10 +219,23 @@ function Navbar({ darkMode }: NavbarProps) {
             )}
           </div>
 
-          {/* Mobile Menu Button & User Profile */}
+          {/* Mobile Menu Button & Dark Mode Toggle & User Profile */}
           <div className="md:hidden flex items-center gap-2">
-            {/* Mobile User Profile - Only show if user is logged in */}
+            {/* Dark Mode Toggle - Mobile */}
+            <button
+              onClick={toggleDarkMode}
+              className={`p-2 ${darkMode ? "bg-yellow-500" : "bg-gray-800"} ${darkMode ? "text-black" : "text-white"} rounded-lg border-2 ${darkMode ? "border-white" : "border-black"}`}
+              aria-label="Toggle dark mode"
+              title={darkMode ? "Light Mode" : "Dark Mode"}
+            >
+              {darkMode ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </button>
 
+            {/* Mobile User Profile - Only show if user is logged in */}
             {user && (
               <div
                 className={`
