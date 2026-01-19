@@ -173,8 +173,6 @@ function Navbar({ darkMode }: NavbarProps) {
                   <div
                     className={`absolute right-0 mt-2 w-48 ${darkMode ? "bg-gray-800 border-white" : "bg-white border-black"} border-2 rounded-lg shadow-lg overflow-hidden`}
                   >
-                    
-
                     <div
                       className={`h-px ${darkMode ? "bg-gray-700" : "bg-gray-200"}`}
                     ></div>
@@ -204,21 +202,21 @@ function Navbar({ darkMode }: NavbarProps) {
           <div className="md:hidden flex items-center gap-2">
             {/* Mobile User Profile - Only show if user is logged in */}
 
-
             {user && (
               <div
                 className={`
-                  flex items-center justify-center
-                  ${darkMode ? "bg-gray-800 border-white" : "bg-gray-100 border-black"}
-                  rounded-full border-2
-                  p-1
-                  w-10 h-10
-                `}
+    w-10 h-10
+    rounded-full
+    border-2
+    ${darkMode ? "border-white" : "border-black"}
+    overflow-hidden
+    flex items-center justify-center
+  `}
               >
                 <img
                   src={user.user_metadata?.avatar_url || "/usericon.png"}
                   alt="User"
-                  className="rounded-full border-2 border-white w-6 h-6"
+                  className="w-full h-full object-cover"
                   onError={(e) => {
                     e.currentTarget.src = "/usericon.png";
                   }}
@@ -256,7 +254,6 @@ function Navbar({ darkMode }: NavbarProps) {
 
             {user ? (
               <>
-                
                 <Link
                   href="/dashboard"
                   onClick={closeMenus}
