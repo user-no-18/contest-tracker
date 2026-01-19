@@ -98,7 +98,7 @@ export default function ContestTracker() {
             isMajor: boolean,
             isHR: boolean,
             within48h: boolean,
-            within72h: boolean
+            within72h: boolean,
           ) => {
             if (isHot) return 1;
             if (isPriority && within48h) return 2;
@@ -114,7 +114,7 @@ export default function ContestTracker() {
             isMajorA,
             isHackerRankA,
             isWithin48hA,
-            isWithin72hA
+            isWithin72hA,
           );
           const priorityB = getPriority(
             b,
@@ -123,7 +123,7 @@ export default function ContestTracker() {
             isMajorB,
             isHackerRankB,
             isWithin48hB,
-            isWithin72hB
+            isWithin72hB,
           );
 
           if (priorityA !== priorityB) {
@@ -228,9 +228,7 @@ export default function ContestTracker() {
       CodeSignal: "bg-pink-200 text-pink-900 border-pink-900",
       TechGig: "bg-cyan-200 text-cyan-900 border-cyan-900",
     };
-    return (
-      lightStyles[platform] || "bg-gray-200 text-gray-900 border-gray-900"
-    );
+    return lightStyles[platform] || "bg-gray-200 text-gray-900 border-gray-900";
   };
 
   const filteredContests =
@@ -248,14 +246,17 @@ export default function ContestTracker() {
         }
 
         .cartoon-shadow {
-          box-shadow: 4px 4px 0px 0px ${darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 1)"};
+          box-shadow: 4px 4px 0px 0px
+            ${darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 1)"};
         }
         .cartoon-shadow-lg {
-          box-shadow: 8px 8px 0px 0px ${darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 1)"};
+          box-shadow: 8px 8px 0px 0px
+            ${darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 1)"};
         }
         .cartoon-shadow-hover:hover {
           transform: translate(2px, 2px);
-          box-shadow: 2px 2px 0px 0px ${darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 1)"};
+          box-shadow: 2px 2px 0px 0px
+            ${darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 1)"};
         }
 
         @keyframes float {
@@ -276,11 +277,13 @@ export default function ContestTracker() {
         @keyframes pulse-glow {
           0%,
           100% {
-            box-shadow: 0 0 20px rgba(255, 100, 0, 0.5),
+            box-shadow:
+              0 0 20px rgba(255, 100, 0, 0.5),
               0 0 40px rgba(255, 100, 0, 0.3);
           }
           50% {
-            box-shadow: 0 0 30px rgba(255, 100, 0, 0.8),
+            box-shadow:
+              0 0 30px rgba(255, 100, 0, 0.8),
               0 0 60px rgba(255, 100, 0, 0.5);
           }
         }
@@ -306,7 +309,7 @@ export default function ContestTracker() {
 
       <div className="min-h-screen relative overflow-x-hidden pb-20">
         {/* Background Company Logos */}
-        
+
         <div className="fixed inset-0 pointer-events-none z-0 select-none overflow-hidden">
           {[
             { src: "/google-1.png", top: "8%", left: "6%" },
@@ -384,8 +387,8 @@ export default function ContestTracker() {
                           ? "bg-white text-black"
                           : "bg-black text-white"
                         : darkMode
-                        ? "bg-gray-800 text-white hover:bg-gray-700"
-                        : "bg-white text-black hover:bg-gray-100"
+                          ? "bg-gray-800 text-white hover:bg-gray-700"
+                          : "bg-white text-black hover:bg-gray-100"
                     }`}
                   >
                     {p === "all" ? "All" : p}
@@ -598,12 +601,121 @@ export default function ContestTracker() {
                   className={`text-xl font-bold flex items-center gap-2 justify-center ${darkMode ? "text-pink-400" : "text-pink-500"}`}
                 >
                   <Briefcase className="w-6 h-6" />
-                  Every problem you solve brings you closer to that Offer Letter!
-                  <Trophy className={`w-6 h-6 ${darkMode ? "text-yellow-400" : "text-yellow-500"}`} />
+                  Every problem you solve brings you closer to that Offer
+                  Letter!
+                  <Trophy
+                    className={`w-6 h-6 ${darkMode ? "text-yellow-400" : "text-yellow-500"}`}
+                  />
                 </p>
               </div>
             </div>
           )}
+
+          <div
+            className={`text-center py-12 border-t-4 border-dashed ${
+              darkMode ? "border-gray-800" : "border-gray-300"
+            }`}
+          >
+            {/* Inspirational Quote */}
+            <p
+              className={`text-lg font-bold mb-2 ${
+                darkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
+              "The best time to plant a tree was 20 years ago. The second best
+              time is now."
+            </p>
+
+            {/* Feedback Call-to-Action */}
+            <p
+              className={`text-sm font-semibold mb-6 max-w-2xl mx-auto ${
+                darkMode ? "text-gray-500" : "text-gray-600"
+              }`}
+            >
+              Found a bug 🐞, have an idea 💡, or want a new feature 🚀?
+              <br />
+              Your feedback helps make DSA Quest better for everyone!
+            </p>
+
+            {/* Feedback Form */}
+            <form
+              action="https://formsubmit.co/debjyoti2409@gmail.com"
+              method="POST"
+              className="max-w-2xl mx-auto mb-8"
+            >
+              {/* Hidden fields for FormSubmit configuration */}
+              <input
+                type="hidden"
+                name="_subject"
+                value="New Feedback on DSA Quest!"
+              />
+              <input type="hidden" name="_captcha" value="false" />
+              <input type="hidden" name="_template" value="table" />
+
+              {/* Feedback Type */}
+              <select
+                name="feedback_type"
+                required
+                className={`w-full px-4 py-3 rounded-xl border-2 font-bold mb-4 ${
+                  darkMode
+                    ? "border-white bg-gray-800 text-white"
+                    : "border-black bg-white text-black"
+                } cartoon-shadow focus:outline-none focus:ring-2 focus:ring-purple-500`}
+              >
+                <option value="">Select Feedback Type</option>
+                <option value="🐞 Bug Report">🐞 Bug Report</option>
+                <option value="💡 Improvement">💡 Improvement</option>
+                <option value="🚀 Feature Request">🚀 Feature Request</option>
+                <option value="💬 General Feedback">💬 General Feedback</option>
+              </select>
+
+              {/* User Email (optional) */}
+              <input
+                type="email"
+                name="user_email"
+                placeholder="Your email (optional, if you want a reply)"
+                className={`w-full px-4 py-3 rounded-xl border-2 font-semibold mb-4 ${
+                  darkMode
+                    ? "border-white bg-gray-800 text-white placeholder-gray-500"
+                    : "border-black bg-white text-black placeholder-gray-400"
+                } cartoon-shadow focus:outline-none focus:ring-2 focus:ring-purple-500`}
+              />
+
+              {/* Feedback Message */}
+              <textarea
+                name="message"
+                required
+                rows={5}
+                placeholder="Share your thoughts here... 💭"
+                className={`w-full px-4 py-3 rounded-xl border-2 font-semibold mb-4 resize-none ${
+                  darkMode
+                    ? "border-white bg-gray-800 text-white placeholder-gray-500"
+                    : "border-black bg-white text-black placeholder-gray-400"
+                } cartoon-shadow focus:outline-none focus:ring-2 focus:ring-purple-500`}
+              />
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className={`inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-lg border-4 transition-all cartoon-shadow-hover ${
+                  darkMode
+                    ? "bg-purple-500 hover:bg-purple-600 text-white border-white"
+                    : "bg-purple-400 hover:bg-purple-500 text-black border-black"
+                }`}
+              >
+                📧 Send Feedback
+              </button>
+            </form>
+
+            {/* Credit/Copyright */}
+            <p
+              className={`text-xs font-semibold mt-8 ${
+                darkMode ? "text-gray-600" : "text-gray-400"
+              }`}
+            >
+              Made with 💜 for competitive programmers
+            </p>
+          </div>
         </div>
       </div>
     </>
