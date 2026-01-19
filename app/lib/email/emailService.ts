@@ -15,20 +15,29 @@ interface EmailOptions {
   html: string;
 }
 
-// Create nodemailer transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
+// Create transporter with better error handling
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
+    },
+    // Add these for better reliability
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+    logger: false, // Set to true for debugging
+    debug: false, // Set to true for debugging
+  });
+}
 
-// Verify transporter configuration
+// Verify email configuration on startup
 export async function verifyEmailConfig() {
   try {
+    const transporter = createTransporter();
     await transporter.verify();
     console.log('✅ Email service is ready');
     return true;
@@ -38,22 +47,44 @@ export async function verifyEmailConfig() {
   }
 }
 
-// Send email function
-export async function sendEmail({ to, subject, html }: EmailOptions) {
-  try {
-    const info = await transporter.sendMail({
-      from: `"DSA Quest" <${process.env.SMTP_USER}>`,
-      to,
-      subject,
-      html,
-    });
+// Send email with retry logic
+export async function sendEmail({ to, subject, html }: EmailOptions, retries = 3) {
+  let lastError: any;
 
-    console.log('✅ Email sent:', info.messageId, 'to:', to);
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    console.error('❌ Email send error:', error);
-    return { success: false, error };
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const transporter = createTransporter();
+      
+      console.log(`📧 Attempt ${attempt}/${retries} - Sending email to ${to}`);
+
+      const info = await transporter.sendMail({
+        from: `"DSA Quest" <${process.env.SMTP_USER}>`,
+        to,
+        subject,
+        html,
+      });
+
+      console.log(`✅ Email sent successfully: ${info.messageId} to ${to}`);
+      
+      // Close transporter connection
+      transporter.close();
+      
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ Email send attempt ${attempt} failed:`, error);
+      
+      // Wait before retry (exponential backoff)
+      if (attempt < retries) {
+        const waitTime = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+        console.log(`⏳ Waiting ${waitTime/1000}s before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
   }
+
+  console.error(`❌ All ${retries} email attempts failed for ${to}`);
+  return { success: false, error: lastError };
 }
 
 // Format duration helper

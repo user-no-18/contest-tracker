@@ -63,14 +63,14 @@ export async function GET(request: Request) {
 
       // Filter contests starting in next 24 hours
       const now = new Date();
-      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+     const tomorrow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
       const upcomingContests = contestsData.contests.filter((contest: any) => {
         const startTime = new Date(contest.start_time);
         return startTime >= now && startTime <= tomorrow;
       });
 
-      console.log(`Found ${upcomingContests.length} contests in next 24 hours`);
+      console.log(`Found ${upcomingContests.length} contests in next 7 days`);
 
       if (upcomingContests.length === 0) {
         return NextResponse.json({
