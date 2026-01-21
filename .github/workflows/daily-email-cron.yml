@@ -1,0 +1,28 @@
+# .github/workflows/daily-email-cron.yml
+# This triggers your Vercel API endpoint at EXACT time daily
+
+name: Daily Contest Email Digest
+
+on:
+  schedule:
+    # Runs every day at 9:00 PM IST (15:30 UTC)
+    # India is UTC+5:30, so 21:00 IST = 15:30 UTC
+    - cron: '30 15 * * *'
+  
+  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  send-emails:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Trigger Email Cron Job
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            https://contest-tracker-zms3.vercel.app/api/cron/send-emails
+        
+      - name: Log Completion
+        run: echo "✅ Email cron job triggered at $(date)"
