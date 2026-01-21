@@ -1,5 +1,6 @@
 "use client";
-
+import { User } from "@supabase/supabase-js";
+import SignInPrompt from "./components/SignInPrompt";
 import { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import {
@@ -13,6 +14,8 @@ import {
   AlertCircle,
   Flame,
 } from "lucide-react";
+import { createClient } from "./lib/supabase/client";
+import InlineSignInBanner from "./components/InlineSignInBanner";
 
 interface Contest {
   id: string;
@@ -24,6 +27,24 @@ interface Contest {
 }
 
 export default function ContestTracker() {
+  const [user, setUser] = useState<User | null>(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+  }, []);
+
+  const handleSignIn = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  };
+
   const [contests, setContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -311,6 +332,7 @@ export default function ContestTracker() {
         {/* Background Company Logos */}
 
         <div className="fixed inset-0 pointer-events-none z-0 select-none overflow-hidden">
+       
           {[
             { src: "/google-1.png", top: "8%", left: "6%" },
             { src: "/google-2.png", bottom: "5%", right: "3%" },
@@ -368,7 +390,7 @@ export default function ContestTracker() {
             <p
               className={`text-xl md:text-2xl ${darkMode ? "text-gray-400" : "text-gray-600"} font-semibold max-w-2xl mx-auto`}
             >
-              Grind LeetCode ➔ Crack FAANG ➔ Buy a Yacht 🛥️
+            Never Miss Yor Contest Again !!!
             </p>
           </div>
 
@@ -717,6 +739,11 @@ export default function ContestTracker() {
             </p>
           </div>
         </div>
+        <SignInPrompt
+          darkMode={darkMode}
+          onSignIn={handleSignIn}
+          isAuthenticated={!!user}
+        />
       </div>
     </>
   );
