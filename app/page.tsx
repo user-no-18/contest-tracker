@@ -390,7 +390,7 @@ export default function ContestTracker() {
             <p
               className={`text-xl md:text-2xl ${darkMode ? "text-gray-400" : "text-gray-600"} font-semibold max-w-2xl mx-auto`}
             >
-            Never Miss Yor Contest Again !!!
+            Get Contest Alerts Before Others Do!
             </p>
           </div>
 
