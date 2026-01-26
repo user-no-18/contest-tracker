@@ -11,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/auth/', '/dashboard'],
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `https://contest-tracker-zms3.vercel.app/sitemap.xml`,
   };
 }
