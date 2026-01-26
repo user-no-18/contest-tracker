@@ -1,6 +1,6 @@
 "use client";
 import { User } from "@supabase/supabase-js";
-import { Metadata } from 'next';
+
 
 import SignInPrompt from "./components/SignInPrompt";
 import { useState, useEffect } from "react";
@@ -27,16 +27,7 @@ interface Contest {
   start_time: string;
   duration: number;
 }
-export const metadata: Metadata = {
-  title: "Contest Tracker - Track Coding Contests from 10+ Platforms",
-  description: "Real-time competitive programming contest tracker. Get alerts for LeetCode, Codeforces, CodeChef, AtCoder, HackerRank contests. Never miss another coding competition!",
-  keywords: "contest tracker, coding contests today, upcoming programming contests, leetcode calendar, codeforces schedule",
-  openGraph: {
-    title: "DSA Quest - Never Miss a Coding Contest",
-    description: "Track 10+ platforms in one place. Get email alerts 24 hours before contests start.",
-    images: ["/og-home.png"],
-  },
-};
+
 
 export default function ContestTracker() {
   const [user, setUser] = useState<User | null>(null);
