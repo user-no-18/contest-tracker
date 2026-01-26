@@ -1,5 +1,10 @@
 "use client";
+import { Metadata } from 'next';
 
+export const metadata: Metadata = {
+  title: "DSA Resources - Free Algorithm Learning",
+  description: "Curated DSA resources, roadmaps & books. Learn from NeetCode 150, Striver A2Z. Prepare for FAANG interviews.",
+};
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { createClient } from "../lib/supabase/client";
